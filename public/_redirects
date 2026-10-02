@@ -1,0 +1,3 @@
+# The app does its own routing. Every address goes to index.html, so
+# opening /bookings directly or refreshing it never gives a 404.
+/*    /index.html    200
