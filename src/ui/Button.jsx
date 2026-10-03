@@ -67,7 +67,21 @@ const Button = styled.button.withConfig(noForward("size", "variation"))`
 
   border: 1.5px solid transparent;
   border-radius: var(--border-radius-sm);
-  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s,
+    transform 0.1s;
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:active:not(:disabled) {
+      transform: none;
+    }
+  }
 
   &:focus-visible {
     outline: 2px solid var(--color-accent-600);

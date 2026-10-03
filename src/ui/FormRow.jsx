@@ -20,7 +20,9 @@ const StyledFormRow = styled.div`
     border-bottom: 1px solid var(--color-grey-100);
   }
 
-  &:has(button) {
+  /* The row of form buttons. Direct children only, so a button inside a
+     field, like the eye on a password, does not count. */
+  &:has(> button) {
     display: flex;
     justify-content: flex-end;
     gap: 1.2rem;

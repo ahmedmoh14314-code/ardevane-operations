@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import styled from "styled-components";
 import { below } from "../styles/breakpoints";
+import { stagger } from "../styles/animations";
 
 const StyledTable = styled.div`
   border: 1px solid var(--color-grey-100);
@@ -47,6 +48,7 @@ const StyledHeader = styled(CommonRow)`
 
 const StyledBody = styled.section`
   margin: 0.4rem 0;
+  ${stagger(10, 30)}
 
   ${below.tablet} {
     margin: 0;

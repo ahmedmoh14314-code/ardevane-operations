@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import Button from "../../ui/Button";
 import Form from "../../ui/Form";
 import FormRow from "../../ui/FormRow";
-import Input from "../../ui/Input";
+import PasswordInput from "../../ui/PasswordInput";
 
 import { useUpdateUser } from "./useUpdateUser";
 
@@ -22,10 +22,9 @@ function UpdatePasswordForm() {
         label="New password (min 8 chars)"
         error={errors?.password?.message}
       >
-        <Input
-          type="password"
+        <PasswordInput
           id="password"
-          autoComplete="current-password"
+          autoComplete="new-password"
           disabled={isUpdating}
           {...register("password", {
             required: "This field is required",
@@ -41,8 +40,7 @@ function UpdatePasswordForm() {
         label="Confirm password"
         error={errors?.passwordConfirm?.message}
       >
-        <Input
-          type="password"
+        <PasswordInput
           autoComplete="new-password"
           id="passwordConfirm"
           disabled={isUpdating}

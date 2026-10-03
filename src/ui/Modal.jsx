@@ -7,8 +7,21 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { HiXMark } from "react-icons/hi2";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
+import { fadeIn } from "../styles/animations";
 import { useOutsideClick } from "../hooks/useOutsideClick";
+
+// The modal is centred with a transform, so its entrance keeps that in
+const pop = keyframes`
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+`;
 
 const StyledModal = styled.div`
   position: fixed;
@@ -20,7 +33,11 @@ const StyledModal = styled.div`
   border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-lg);
   padding: 3.2rem 4rem;
-  transition: all 0.5s;
+  animation: ${pop} 0.22s ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-name: ${fadeIn};
+  }
 `;
 
 const Overlay = styled.div`
@@ -32,7 +49,7 @@ const Overlay = styled.div`
   background-color: var(--backdrop-color);
   backdrop-filter: blur(4px);
   z-index: 1000;
-  transition: all 0.5s;
+  animation: ${fadeIn} 0.2s ease-out;
 `;
 
 const Button = styled.button`
@@ -108,7 +125,7 @@ function Window({ children, name }) {
 
       return () => document.removeEventListener("keydown", handleKey);
     },
-    [isOpen, close, ref]
+    [isOpen, close, ref],
   );
 
   if (!isOpen) return null;
@@ -123,7 +140,7 @@ function Window({ children, name }) {
         <div>{cloneElement(children, { onCloseModal: close })}</div>
       </StyledModal>
     </Overlay>,
-    document.body
+    document.body,
   );
 }
 

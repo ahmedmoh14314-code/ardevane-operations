@@ -1,8 +1,20 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { HiEllipsisVertical } from "react-icons/hi2";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
+import { fadeIn } from "../styles/animations";
 import { useOutsideClick } from "../hooks/useOutsideClick";
+
+const dropIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(-0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+`;
 
 const Menu = styled.div`
   display: flex;
@@ -44,6 +56,11 @@ const StyledList = styled.ul`
   box-shadow: var(--shadow-lg);
   border-radius: var(--border-radius-md);
   z-index: 1300;
+  animation: ${dropIn} 0.16s ease-out;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-name: ${fadeIn};
+  }
 
   right: ${(props) => props.position.x}px;
   top: ${(props) => props.position.y}px;
@@ -59,7 +76,9 @@ const StyledButton = styled.button`
   font-size: 1.4rem;
   font-weight: 500;
   color: var(--color-grey-700);
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 
   display: flex;
   align-items: center;
@@ -145,7 +164,7 @@ function List({ id, children }) {
 
       return () => document.removeEventListener("keydown", handleKey);
     },
-    [openId, id, close]
+    [openId, id, close],
   );
 
   if (openId !== id) return null;
@@ -154,7 +173,7 @@ function List({ id, children }) {
     <StyledList position={position} ref={ref} role="menu">
       {children}
     </StyledList>,
-    document.body
+    document.body,
   );
 }
 

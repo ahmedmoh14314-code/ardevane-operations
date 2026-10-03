@@ -3,6 +3,7 @@ import Button from "../../ui/Button";
 import Form from "../../ui/Form";
 import FormRow from "../../ui/FormRow";
 import Input from "../../ui/Input";
+import PasswordInput from "../../ui/PasswordInput";
 import { useSignup } from "./useSignup";
 
 function SignupForm() {
@@ -15,7 +16,7 @@ function SignupForm() {
       { fullName, email, password },
       {
         onSettled: () => reset(),
-      }
+      },
     );
   }
 
@@ -49,9 +50,9 @@ function SignupForm() {
         label="Password (min 8 characters)"
         error={errors?.password?.message}
       >
-        <Input
-          type="password"
+        <PasswordInput
           id="password"
+          autoComplete="new-password"
           disabled={isLoading}
           {...register("password", {
             required: "This field is required",
@@ -64,9 +65,9 @@ function SignupForm() {
       </FormRow>
 
       <FormRow label="Repeat password" error={errors?.passwordConfirm?.message}>
-        <Input
-          type="password"
+        <PasswordInput
           id="passwordConfirm"
+          autoComplete="new-password"
           disabled={isLoading}
           {...register("passwordConfirm", {
             required: "This field is required",

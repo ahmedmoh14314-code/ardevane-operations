@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { useCountUp } from "../../hooks/useCountUp";
 
 const StyledStat = styled.div`
   background-color: var(--color-grey-0);
@@ -48,12 +49,15 @@ const Value = styled.p`
   color: var(--color-grey-800);
 `;
 
-function Stat({ icon, title, value, color }) {
+// value is a plain number; format turns it into what is shown, like $1,200
+function Stat({ icon, title, value, format = (n) => n, color }) {
+  const shown = useCountUp(Number.isFinite(value) ? value : 0);
+
   return (
     <StyledStat>
       <Icon color={color}>{icon}</Icon>
       <Title>{title}</Title>
-      <Value>{value}</Value>
+      <Value>{format(shown)}</Value>
     </StyledStat>
   );
 }

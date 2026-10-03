@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import WelcomeSplash from "./WelcomeSplash";
 import { below } from "../styles/breakpoints";
+import { enter } from "../styles/animations";
 
 const StyledAppLayout = styled.div`
   display: grid;
@@ -39,6 +40,9 @@ const Container = styled.div`
   flex-direction: column;
   gap: 3.2rem;
 
+  /* Keyed by the page, so this plays every time you move to a new one */
+  ${enter()}
+
   ${below.tablet} {
     gap: 2.4rem;
   }
@@ -53,7 +57,7 @@ function AppLayout() {
   // shows the splash again.
   const finishWelcome = useCallback(
     () => navigate(pathname, { replace: true, state: null }),
-    [navigate, pathname]
+    [navigate, pathname],
   );
 
   const close = () => setIsNavOpen(false);

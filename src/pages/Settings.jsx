@@ -7,7 +7,7 @@ function Settings() {
       <PageHeader
         eyebrow="Management"
         title="Hotel settings"
-        description="The defaults every new booking is priced against."
+        description="Configure your booking rules and pricing to match your property."
       />
 
       <UpdateSettingsForm />

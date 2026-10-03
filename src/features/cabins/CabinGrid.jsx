@@ -11,12 +11,14 @@ import Button from "../../ui/Button";
 import Skeleton from "../../ui/Skeleton";
 import EmptyState from "../../ui/EmptyState";
 import ErrorMessage from "../../ui/ErrorMessage";
+import { stagger } from "../../styles/animations";
 
 // As many cards across as fit, each at least 28rem wide
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(28rem, 1fr));
   gap: 2.4rem;
+  ${stagger(12, 50)}
 `;
 
 const CardSkeleton = styled.div`
@@ -83,12 +85,12 @@ function CabinGrid() {
 
   if (statusValue === "active")
     filteredCabins = filteredCabins.filter(
-      (cabin) => cabin.is_active !== false
+      (cabin) => cabin.is_active !== false,
     );
 
   if (statusValue === "archived")
     filteredCabins = filteredCabins.filter(
-      (cabin) => cabin.is_active === false
+      (cabin) => cabin.is_active === false,
     );
 
   // 3. Sort
@@ -99,7 +101,7 @@ function CabinGrid() {
   const sortedCabins = [...filteredCabins].sort((a, b) =>
     typeof a[field] === "string"
       ? a[field].localeCompare(b[field]) * modifier
-      : (a[field] - b[field]) * modifier
+      : (a[field] - b[field]) * modifier,
   );
 
   function clearFilters() {
