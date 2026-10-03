@@ -31,7 +31,9 @@ const FilterButton = styled.button`
   white-space: nowrap;
 
   padding: 0.6rem 1.4rem;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 
   &:hover:not(:disabled) {
     color: var(--color-grey-900);

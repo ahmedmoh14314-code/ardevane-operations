@@ -171,11 +171,11 @@ function CalendarTimeline() {
                 // Clamp to the window, so a stay that began earlier still shows
                 const start = Math.max(
                   0,
-                  dayOffset(booking.startDate, rangeStart)
+                  dayOffset(booking.startDate, rangeStart),
                 );
                 const end = Math.min(
                   DAYS_VISIBLE,
-                  dayOffset(booking.endDate, rangeStart)
+                  dayOffset(booking.endDate, rangeStart),
                 );
 
                 if (end <= start) return null;

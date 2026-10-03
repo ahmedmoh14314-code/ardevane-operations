@@ -48,7 +48,8 @@ function GuestBookings({ bookings }) {
             <span>{booking.cabins?.name || "—"}</span>
 
             <span>
-              {formatDay(booking.startDate)} &mdash; {formatDay(booking.endDate)}
+              {formatDay(booking.startDate)} &mdash;{" "}
+              {formatDay(booking.endDate)}
             </span>
 
             <Tag type={STATUS_COLOR[booking.status] || "silver"}>

@@ -12,7 +12,9 @@ const ButtonText = styled.button.withConfig(noForward("type"))`
   text-decoration: underline;
   text-decoration-color: transparent;
   text-underline-offset: 0.4rem;
-  transition: color 0.2s, text-decoration-color 0.2s;
+  transition:
+    color 0.2s,
+    text-decoration-color 0.2s;
 
   &:hover,
   &:active {

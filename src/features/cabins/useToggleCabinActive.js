@@ -18,8 +18,8 @@ export function useToggleCabinActive() {
 
       queryClient.setQueryData(["cabins"], (old) =>
         old?.map((cabin) =>
-          cabin.id === id ? { ...cabin, is_active: isActive } : cabin
-        )
+          cabin.id === id ? { ...cabin, is_active: isActive } : cabin,
+        ),
       );
 
       return { previous };
@@ -32,7 +32,7 @@ export function useToggleCabinActive() {
 
     onSuccess: (cabin) => {
       toast.success(
-        cabin.is_active ? "Cabin is active again" : "Cabin archived"
+        cabin.is_active ? "Cabin is active again" : "Cabin archived",
       );
     },
 

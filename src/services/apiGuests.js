@@ -16,7 +16,7 @@ export async function getGuests({ search, sortBy, page }) {
   if (search) {
     const term = `%${search}%`;
     query = query.or(
-      `fullName.ilike.${term},email.ilike.${term},nationality.ilike.${term}`
+      `fullName.ilike.${term},email.ilike.${term},nationality.ilike.${term}`,
     );
   }
 
@@ -64,12 +64,12 @@ export function withStats(guest) {
 
   const now = Date.now();
   const sorted = [...bookings].sort(
-    (a, b) => new Date(a.startDate) - new Date(b.startDate)
+    (a, b) => new Date(a.startDate) - new Date(b.startDate),
   );
 
   // The stay happening right now, or the next one booked
   const current = sorted.find(
-    (b) => new Date(b.startDate) <= now && new Date(b.endDate) >= now
+    (b) => new Date(b.startDate) <= now && new Date(b.endDate) >= now,
   );
   const upcoming = sorted.find((b) => new Date(b.startDate) > now);
 
@@ -82,7 +82,8 @@ export function withStats(guest) {
       spend: counted.reduce((sum, b) => sum + (b.totalPrice ?? 0), 0),
       currentStay: current ?? null,
       upcomingStay: upcoming ?? null,
-      lastStay: [...sorted].reverse().find((b) => new Date(b.endDate) < now) ?? null,
+      lastStay:
+        [...sorted].reverse().find((b) => new Date(b.endDate) < now) ?? null,
     },
   };
 }

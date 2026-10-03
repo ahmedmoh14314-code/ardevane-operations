@@ -22,26 +22,29 @@ const StyledSidebar = styled.aside`
 
   border-right: 1px solid var(--color-grey-100);
   background-color: var(--color-grey-50);
-  background-image: linear-gradient(
-      to top,
-      rgba(10, 30, 22, 0.75),
-      rgba(10, 30, 22, 0) 22%
-    ),
+  background-image:
+    linear-gradient(to top, rgba(10, 30, 22, 0.75), rgba(10, 30, 22, 0) 22%),
     url("/img/sidebar.webp");
   background-repeat: no-repeat;
-  background-size: auto, 100% auto;
+  background-size:
+    auto,
+    100% auto;
 
   /* The links never sit on the trees. On a short screen the picture slides
      down a little instead, so the rocks at its foot drop out of view and the
      cabin stays. 86.5rem is where the links end plus the height of the photo
      below its tallest pine. */
-  background-position: 0 0, center calc(100% + max(0rem, 86.5rem - 100dvh));
+  background-position:
+    0 0,
+    center calc(100% + max(0rem, 86.5rem - 100dvh));
 
   /* A short laptop screen: a smaller logo and tighter links, so the photo
      does not have to slide as far */
   @media (max-height: 820px) {
     gap: 1.6rem;
-    background-position: 0 0, center calc(100% + max(0rem, 78.5rem - 100dvh));
+    background-position:
+      0 0,
+      center calc(100% + max(0rem, 78.5rem - 100dvh));
 
     & img {
       height: 6.4rem;
@@ -123,7 +126,7 @@ function Sidebar({ isOpen, onClose }) {
 
       return () => document.removeEventListener("keydown", handleKey);
     },
-    [isOpen, onClose]
+    [isOpen, onClose],
   );
 
   return (

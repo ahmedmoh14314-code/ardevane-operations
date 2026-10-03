@@ -93,7 +93,11 @@ const BUCKETS = [
   { duration: "4–5 nights", color: "#4f8a63", test: (n) => n >= 4 && n <= 5 },
   { duration: "6–7 nights", color: "#7fae8c", test: (n) => n >= 6 && n <= 7 },
   { duration: "8–14 nights", color: "#a7bfb0", test: (n) => n >= 8 && n <= 14 },
-  { duration: "15–21 nights", color: "#8a6a3a", test: (n) => n >= 15 && n <= 21 },
+  {
+    duration: "15–21 nights",
+    color: "#8a6a3a",
+    test: (n) => n >= 15 && n <= 21,
+  },
   { duration: "21+ nights", color: "#2f6b52", test: (n) => n > 21 },
 ];
 

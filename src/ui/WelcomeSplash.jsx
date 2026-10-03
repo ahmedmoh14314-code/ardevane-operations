@@ -148,7 +148,7 @@ function WelcomeSplash({ onDone }) {
     function () {
       if (isFetching > 0) sawFetching.current = true;
     },
-    [isFetching]
+    [isFetching],
   );
 
   useEffect(function () {
@@ -166,7 +166,7 @@ function WelcomeSplash({ onDone }) {
       if (hasMinPassed && sawFetching.current && isFetching === 0)
         setIsLeaving(true);
     },
-    [hasMinPassed, isFetching]
+    [hasMinPassed, isFetching],
   );
 
   useEffect(
@@ -177,11 +177,15 @@ function WelcomeSplash({ onDone }) {
 
       return () => clearTimeout(done);
     },
-    [isLeaving, onDone]
+    [isLeaving, onDone],
   );
 
   return (
-    <StyledSplash $leaving={isLeaving} role="status" aria-label="Loading your dashboard">
+    <StyledSplash
+      $leaving={isLeaving}
+      role="status"
+      aria-label="Loading your dashboard"
+    >
       <Photo />
       <Glow />
 

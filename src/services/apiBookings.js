@@ -7,7 +7,7 @@ export async function getBookings({ filter, sortBy, page }) {
   let query = supabase.from("bookings").select(
     "id, created_at, startDate, endDate, numNights, numGuests, status, totalPrice, cabins(name), guests(fullName, email)",
     // count tells the pagination how many rows exist
-    { count: "exact" }
+    { count: "exact" },
   );
 
   // Filter on the server, not here
@@ -97,7 +97,7 @@ export async function getStaysTodayActivity() {
     // with never hides a stay. Done in SQL, so we never download every
     // booking ever made.
     .or(
-      `and(status.eq.unconfirmed,startDate.gte.${start},startDate.lte.${end}),and(status.eq.checked-in,endDate.gte.${start},endDate.lte.${end})`
+      `and(status.eq.unconfirmed,startDate.gte.${start},startDate.lte.${end}),and(status.eq.checked-in,endDate.gte.${start},endDate.lte.${end})`,
     )
     .order("created_at");
 
@@ -145,7 +145,7 @@ export async function getBookingsInRange(from, to) {
   const { data, error } = await supabase
     .from("bookings")
     .select(
-      "id, startDate, endDate, numNights, numGuests, status, totalPrice, cabinId, guests(fullName), cabins(id, name)"
+      "id, startDate, endDate, numNights, numGuests, status, totalPrice, cabinId, guests(fullName), cabins(id, name)",
     )
     .lt("startDate", to)
     .gt("endDate", from)
@@ -177,6 +177,6 @@ export async function getBookingCounts() {
 
       return counts;
     },
-    { all: 0 }
+    { all: 0 },
   );
 }

@@ -8,7 +8,11 @@ import {
 } from "../../services/apiCabins";
 
 export function useCabinImages(cabinId) {
-  const { isLoading, data: images, error } = useQuery({
+  const {
+    isLoading,
+    data: images,
+    error,
+  } = useQuery({
     queryKey: ["cabin-images", cabinId],
     queryFn: () => getCabinImages(cabinId),
     enabled: Boolean(cabinId),

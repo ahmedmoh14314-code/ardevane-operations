@@ -1,9 +1,30 @@
 import { describe, expect, it } from "vitest";
 import { withStats } from "./apiGuests";
 
-const past = { id: 1, startDate: "2020-01-01", endDate: "2020-01-06", numNights: 5, totalPrice: 500, status: "checked-out" };
-const future = { id: 2, startDate: "2090-01-01", endDate: "2090-01-04", numNights: 3, totalPrice: 300, status: "unconfirmed" };
-const cancelled = { id: 3, startDate: "2021-01-01", endDate: "2021-01-03", numNights: 2, totalPrice: 200, status: "cancelled" };
+const past = {
+  id: 1,
+  startDate: "2020-01-01",
+  endDate: "2020-01-06",
+  numNights: 5,
+  totalPrice: 500,
+  status: "checked-out",
+};
+const future = {
+  id: 2,
+  startDate: "2090-01-01",
+  endDate: "2090-01-04",
+  numNights: 3,
+  totalPrice: 300,
+  status: "unconfirmed",
+};
+const cancelled = {
+  id: 3,
+  startDate: "2021-01-01",
+  endDate: "2021-01-03",
+  numNights: 2,
+  totalPrice: 200,
+  status: "cancelled",
+};
 
 describe("withStats", () => {
   it("counts stays, nights and spend", () => {
@@ -34,7 +55,14 @@ describe("withStats", () => {
     const yesterday = new Date(today.getTime() - 86400000).toISOString();
     const tomorrow = new Date(today.getTime() + 86400000).toISOString();
 
-    const ongoing = { id: 4, startDate: yesterday, endDate: tomorrow, numNights: 2, totalPrice: 200, status: "checked-in" };
+    const ongoing = {
+      id: 4,
+      startDate: yesterday,
+      endDate: tomorrow,
+      numNights: 2,
+      totalPrice: 200,
+      status: "checked-in",
+    };
     const { stats } = withStats({ id: 9, bookings: [ongoing] });
 
     expect(stats.currentStay.id).toBe(ongoing.id);

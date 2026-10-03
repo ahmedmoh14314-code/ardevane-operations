@@ -82,7 +82,7 @@ function Search({ paramName = "search", placeholder = "Search...", label }) {
 
       setSearchParams(searchParams, { replace: true });
     },
-    [debounced, urlValue, paramName, searchParams, setSearchParams]
+    [debounced, urlValue, paramName, searchParams, setSearchParams],
   );
 
   return (

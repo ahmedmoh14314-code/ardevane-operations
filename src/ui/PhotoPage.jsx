@@ -61,7 +61,9 @@ const Card = styled.div`
   background-color: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(16px);
 
-  transition: opacity ${LOGIN_LEAVE_MS}ms ease, transform ${LOGIN_LEAVE_MS}ms ease;
+  transition:
+    opacity ${LOGIN_LEAVE_MS}ms ease,
+    transform ${LOGIN_LEAVE_MS}ms ease;
 
   ${(props) =>
     props.$leaving &&
@@ -125,7 +127,7 @@ function PhotoPage({ eyebrow, title, subtitle, isLeaving = false, children }) {
       const rect = markRef.current.getBoundingClientRect();
       setDrop(window.innerHeight / 2 - (rect.top + rect.height / 2));
     },
-    [isLeaving]
+    [isLeaving],
   );
 
   return (

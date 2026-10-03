@@ -14,7 +14,8 @@ import { below } from "../styles/breakpoints";
 // Detail pages get neither. They use <Breadcrumb> instead.
 
 const fade = (stop) => css`
-  background-image: linear-gradient(
+  background-image:
+    linear-gradient(
       to top,
       rgb(var(--header-fade-rgb)) 0%,
       rgba(var(--header-fade-rgb), 0) 22%
@@ -37,8 +38,14 @@ const hero = css`
 
   ${fade("18%")}
   background-repeat: no-repeat;
-  background-size: auto, auto, 100% auto;
-  background-position: 0 0, 0 0, right top;
+  background-size:
+    auto,
+    auto,
+    100% auto;
+  background-position:
+    0 0,
+    0 0,
+    right top;
 
   ${below.laptop} {
     margin: -3.2rem -2.4rem -10rem;
@@ -149,7 +156,13 @@ const Actions = styled.div.withConfig(noForward("variant"))`
         `}
 `;
 
-function PageHeader({ variant = "band", eyebrow, title, description, children }) {
+function PageHeader({
+  variant = "band",
+  eyebrow,
+  title,
+  description,
+  children,
+}) {
   return (
     <StyledPageHeader variant={variant}>
       <Text>

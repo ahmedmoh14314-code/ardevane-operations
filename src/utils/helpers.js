@@ -46,5 +46,5 @@ export const getTodayRange = function () {
 // Turns 1200 into $1,200.00
 export const formatCurrency = (value) =>
   new Intl.NumberFormat("en", { style: "currency", currency: "USD" }).format(
-    value
+    value,
   );

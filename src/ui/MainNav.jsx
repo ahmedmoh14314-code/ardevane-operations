@@ -76,7 +76,9 @@ const StyledNavLink = styled(NavLink)`
     padding: 1.2rem 1.6rem;
     border-left: 3px solid transparent;
     border-radius: var(--border-radius-md);
-    transition: background-color 0.2s, color 0.2s;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
 
     @media (max-height: 820px) {
       padding: 0.9rem 1.6rem;
@@ -155,7 +157,8 @@ const SECTIONS = [
 function sectionOf(pathname) {
   const section = SECTIONS.find(
     (section) =>
-      section.label && section.items.some((item) => pathname.startsWith(item.to))
+      section.label &&
+      section.items.some((item) => pathname.startsWith(item.to)),
   );
 
   return section?.label ?? "Operations";
@@ -171,7 +174,7 @@ function MainNav({ onNavigate }) {
     function () {
       setOpenSection(sectionOf(pathname));
     },
-    [pathname]
+    [pathname],
   );
 
   function toggle(label) {

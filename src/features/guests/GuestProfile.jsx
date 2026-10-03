@@ -58,7 +58,10 @@ function GuestProfile({ guest }) {
 
       <Line>
         {countryFlag && (
-          <Flag src={countryFlag} alt={nationality ? `Flag of ${nationality}` : ""} />
+          <Flag
+            src={countryFlag}
+            alt={nationality ? `Flag of ${nationality}` : ""}
+          />
         )}
         <span>{nationality || "Nationality unknown"}</span>
       </Line>

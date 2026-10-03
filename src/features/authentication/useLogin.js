@@ -24,7 +24,7 @@ export function useLogin() {
       setTimeout(
         () =>
           navigate("/dashboard", { replace: true, state: { welcome: true } }),
-        LOGIN_LEAVE_MS
+        LOGIN_LEAVE_MS,
       );
     },
 

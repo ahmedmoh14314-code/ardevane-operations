@@ -44,7 +44,9 @@ function BookingTable() {
             ? `Nothing found with the status "${status.replace("-", " ")}".`
             : "Try a different guest name, email, cabin or booking id."
         }
-        action={<Button onClick={clearFilters}>Clear search and filters</Button>}
+        action={
+          <Button onClick={clearFilters}>Clear search and filters</Button>
+        }
       />
     );
 
@@ -59,7 +61,10 @@ function BookingTable() {
 
   return (
     <Menus>
-      <Table columns="1.5fr 2.2fr 1.9fr 1.3fr 1.1fr 10rem 3.2rem" label="Bookings">
+      <Table
+        columns="1.5fr 2.2fr 1.9fr 1.3fr 1.1fr 10rem 3.2rem"
+        label="Bookings"
+      >
         <Table.Header>
           <div>Cabin</div>
           <div>Guest</div>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 // Subscribes to a media query so layout decisions can live in JS, not only CSS
 export function useMediaQuery(query) {
   const [matches, setMatches] = useState(
-    () => window.matchMedia(query).matches
+    () => window.matchMedia(query).matches,
   );
 
   useEffect(
@@ -16,7 +16,7 @@ export function useMediaQuery(query) {
 
       return () => list.removeEventListener("change", onChange);
     },
-    [query]
+    [query],
   );
 
   return matches;

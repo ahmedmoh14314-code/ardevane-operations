@@ -123,7 +123,7 @@ function SalesChart({ bookings, numDays }) {
 
   const peak = data.reduce(
     (best, day) => (day.totalSales > best.totalSales ? day : best),
-    data[0]
+    data[0],
   );
 
   return (
@@ -169,7 +169,10 @@ function SalesChart({ bookings, numDays }) {
             width={56}
           />
 
-          <Tooltip content={<SalesTooltip />} cursor={{ stroke: colors.grid }} />
+          <Tooltip
+            content={<SalesTooltip />}
+            cursor={{ stroke: colors.grid }}
+          />
 
           {peak.totalSales > 0 && (
             <ReferenceLine
@@ -187,7 +190,12 @@ function SalesChart({ bookings, numDays }) {
             strokeWidth={2.5}
             fill="url(#sales-fill)"
             dot={{ r: 4, fill: colors.line, stroke: "#fff", strokeWidth: 2 }}
-            activeDot={{ r: 6, fill: colors.line, stroke: "#fff", strokeWidth: 2 }}
+            activeDot={{
+              r: 6,
+              fill: colors.line,
+              stroke: "#fff",
+              strokeWidth: 2,
+            }}
             name="Total sales"
           />
 

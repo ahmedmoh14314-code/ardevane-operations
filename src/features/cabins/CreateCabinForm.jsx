@@ -35,7 +35,7 @@ function CreateCabinForm({ cabinToEdit = {}, onCloseModal }) {
             reset();
             onCloseModal?.();
           },
-        }
+        },
       );
     else
       createCabin(
@@ -45,7 +45,7 @@ function CreateCabinForm({ cabinToEdit = {}, onCloseModal }) {
             reset();
             onCloseModal?.();
           },
-        }
+        },
       );
   }
 

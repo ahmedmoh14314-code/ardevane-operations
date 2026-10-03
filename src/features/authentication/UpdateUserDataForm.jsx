@@ -33,7 +33,7 @@ function UpdateUserDataForm() {
           setAvatar(null);
           e.target.reset();
         },
-      }
+      },
     );
   }
 

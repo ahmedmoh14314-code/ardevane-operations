@@ -28,7 +28,9 @@ const Card = styled.article`
   border: 1px solid var(--color-grey-100);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
 
   &:hover {
     box-shadow: var(--shadow-md);

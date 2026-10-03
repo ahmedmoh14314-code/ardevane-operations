@@ -85,7 +85,10 @@ function GuestRow({ guest }) {
       <Secondary>
         <Country>
           {countryFlag && (
-            <Flag src={countryFlag} alt={nationality ? `Flag of ${nationality}` : ""} />
+            <Flag
+              src={countryFlag}
+              alt={nationality ? `Flag of ${nationality}` : ""}
+            />
           )}
           <span>{nationality || "—"}</span>
         </Country>

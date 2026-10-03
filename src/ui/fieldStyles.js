@@ -8,7 +8,10 @@ export const field = css`
   background-color: var(--color-grey-50);
   border: 1px solid var(--color-grey-200);
   border-radius: var(--border-radius-md);
-  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
 
   &::placeholder {
     color: var(--color-grey-400);
