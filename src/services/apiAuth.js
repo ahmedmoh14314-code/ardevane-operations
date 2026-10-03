@@ -9,6 +9,10 @@ export async function signup({ fullName, email, password }) {
         fullName,
         avatar: "",
       },
+      // The confirmation email links back to the site the employee was
+      // created on: the live site in production, localhost while developing.
+      // Supabase only follows it if the address is in its Redirect URLs.
+      emailRedirectTo: window.location.origin,
     },
   });
 
