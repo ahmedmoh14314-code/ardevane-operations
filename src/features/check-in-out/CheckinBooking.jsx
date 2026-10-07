@@ -1,6 +1,8 @@
 import styled from "styled-components";
-import BookingDataBox from "../../features/bookings/BookingDataBox";
+import { format } from "date-fns";
 
+import BookingDataBox from "../../features/bookings/BookingDataBox";
+import StayFolio from "../folio/StayFolio";
 import Row from "../../ui/Row";
 import Heading from "../../ui/Heading";
 import ButtonGroup from "../../ui/ButtonGroup";
@@ -11,13 +13,8 @@ import Spinner from "../../ui/Spinner";
 
 import { useMoveBack } from "../../hooks/useMoveBack";
 import { useBooking } from "../bookings/useBooking";
-import { useEffect, useState } from "react";
-import Checkbox from "../../ui/Checkbox";
-import { formatCurrency, hasArrived, toDay } from "../../utils/helpers";
-import { breakfastPrice } from "../../utils/pricing";
 import { useCheckin } from "./useCheckin";
-import { useSettings } from "../settings/useSettings";
-import { format } from "date-fns";
+import { hasArrived, toDay } from "../../utils/helpers";
 import { bookingStatus } from "../../utils/constants";
 
 const Notice = styled.p`
@@ -25,60 +22,17 @@ const Notice = styled.p`
   color: var(--color-grey-600);
 `;
 
-const Box = styled.div`
-  background-color: var(--color-grey-0);
-  border: 1px solid var(--color-grey-100);
-  border-radius: var(--border-radius-md);
-  padding: 2.4rem 4rem;
-`;
-
+// Checking in no longer depends on payment: the desk can take cash on the
+// folio below now, later in the stay, or at checkout.
 function CheckinBooking() {
-  const [confirmPaid, setConfirmPaid] = useState(false);
-  const [addBreakfast, setAddBreakfast] = useState(false);
   const { booking, isLoading } = useBooking();
-  const { settings, isLoading: isLoadingSettings } = useSettings();
-
-  useEffect(() => setConfirmPaid(booking?.isPaid ?? false), [booking]);
-
   const moveBack = useMoveBack();
   const { checkin, isCheckingIn } = useCheckin();
 
-  if (isLoading || isLoadingSettings) return <Spinner />;
+  if (isLoading) return <Spinner />;
 
-  const {
-    id: bookingId,
-    reference,
-    status,
-    startDate,
-    guests,
-    totalPrice,
-    numGuests,
-    hasBreakfast,
-    numNights,
-  } = booking;
-
-  const optionalBreakfastPrice = breakfastPrice({
-    breakfastPrice: settings.breakfastPrice,
-    numNights,
-    numGuests,
-  });
-
-  function handleCheckin() {
-    if (!confirmPaid) return;
-
-    if (addBreakfast) {
-      checkin({
-        bookingId,
-        breakfast: {
-          hasBreakfast: true,
-          extrasPrice: optionalBreakfastPrice,
-          totalPrice: totalPrice + optionalBreakfastPrice,
-        },
-      });
-    } else {
-      checkin({ bookingId, breakfast: {} });
-    }
-  }
+  const { id: bookingId, reference, status, startDate } = booking;
+  const canCheckIn = status === "reserved" && hasArrived(startDate);
 
   return (
     <>
@@ -108,47 +62,11 @@ function CheckinBooking() {
         </Notice>
       )}
 
-      {status === "reserved" && hasArrived(startDate) && !hasBreakfast && (
-        <Box>
-          <Checkbox
-            checked={addBreakfast}
-            onChange={() => {
-              setAddBreakfast((add) => !add);
-              setConfirmPaid(false);
-            }}
-            id="breakfast"
-          >
-            Want to add breakfast for {formatCurrency(optionalBreakfastPrice)}?
-          </Checkbox>
-        </Box>
-      )}
-
-      {status === "reserved" && hasArrived(startDate) && (
-        <Box>
-          <Checkbox
-            checked={confirmPaid}
-            onChange={() => setConfirmPaid((confirm) => !confirm)}
-            disabled={confirmPaid || isCheckingIn}
-            id="confirm"
-          >
-            I confirm that {guests.fullName} has paid the total amount of{" "}
-            {!addBreakfast
-              ? formatCurrency(totalPrice)
-              : `${formatCurrency(
-                  totalPrice + optionalBreakfastPrice,
-                )} (${formatCurrency(totalPrice)} + ${formatCurrency(
-                  optionalBreakfastPrice,
-                )})`}
-          </Checkbox>
-        </Box>
-      )}
+      <StayFolio booking={booking} />
 
       <ButtonGroup>
-        {status === "reserved" && hasArrived(startDate) && (
-          <Button
-            onClick={handleCheckin}
-            disabled={!confirmPaid || isCheckingIn}
-          >
+        {canCheckIn && (
+          <Button onClick={() => checkin(bookingId)} disabled={isCheckingIn}>
             Check in {reference}
           </Button>
         )}

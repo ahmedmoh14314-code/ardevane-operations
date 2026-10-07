@@ -1,10 +1,11 @@
 # Ardevane Operations
 
-The internal dashboard for a mountain cabin resort. Front-desk staff use it to run the day: who arrives, who leaves, which cabins are free, what has been paid.
+The internal dashboard for a mountain cabin resort. Front-desk staff use it to run the day: who arrives, who leaves, which cabins are free, what each stay still owes.
 
 ## What it does
 
-- **Bookings** — take walk-in and phone bookings with a live price; search by guest, email, cabin or booking reference; filter by status with live counts; check guests in and out from the row; mark as paid, cancel, or record a no-show.
+- **Bookings** — take walk-in and phone bookings with a live price; search by guest, email, cabin or booking reference; filter by status with live counts; check guests in and out from the row; cancel, or record a no-show; see what each stay still owes.
+- **Stay folio** — every booking has a folio: the nights, extra charges (breakfast, laundry, extra cleaning or anything written in) and the cash taken, with what is still to pay worked out from them. Check-in and checkout never depend on payment.
 - **Today** — arrivals and departures for the current day on the dashboard, with sales and stay-length charts for the last 7, 30 or 90 days.
 - **Cabins** — photo cards with the nightly price after discount; a gallery per cabin; archive a cabin instead of deleting it, so its booking history stays.
 - **Guests** — every guest with their stays, nights and total spend.
@@ -23,10 +24,11 @@ React · React Router · TanStack Query · styled-components · Recharts · Supa
 - Every table is locked with row-level security. Visitors see only open cabins and the house rules, a guest sees only their own profile and bookings, and staff see everything. Uploading photos is staff-only too.
 - Stays are calendar days, and "today" is worked out in the hotel's own time zone, so a stay never shifts by a day or disappears from the list in the hours after midnight.
 - Bookings are made only through database functions, shared by this dashboard (walk-in and phone bookings) and the guest website, so there is one set of rules: an open cabin, the house rules for stay length and guests, free nights, and a price the database works out itself.
+- Nothing about money is stored as a total or a paid flag. A view adds up each folio (accommodation + charges − payments) every time it is read, so the numbers can't drift. Only staff can add a charge or record a payment, amounts must be above zero, and the only payment method is cash.
 - A no-overlap constraint makes it impossible for two stays to share a night in a cabin, even when two people confirm at the same moment.
 - A booking moves through reserved → checked in → checked out, or ends as cancelled or a no-show; the database refuses any other step. Cancelling keeps the booking on record, and every booking has a short reference like ARD-7K3Q9P.
 - Each page is loaded only when it is opened.
-- Pricing, date and guest-stat logic is covered by unit tests. The access and booking rules are covered by database tests that sign in as a visitor, guests, a front desk employee and an admin, including two guests booking the same nights at the same moment.
+- Folio, date and guest-stat logic is covered by unit tests. The access, booking and folio rules are covered by database tests that sign in as a visitor, guests, a front desk employee and an admin, including two guests booking the same nights at the same moment.
 
 ## The backend
 

@@ -5,7 +5,7 @@ import { PAGE_SIZE } from "../utils/constants";
 // name on the booking row, so one search box can match any of them and the
 // filtering still happens on the server.
 const COLUMNS =
-  "id, reference, created_at, startDate, endDate, numNights, numGuests, status, source, totalPrice, isPaid, observations, cabinId, guest_name, guest_email, cabin_name";
+  "id, reference, created_at, startDate, endDate, numNights, numGuests, status, source, totalPrice, folio_total, folio_paid, folio_remaining, observations, cabinId, guest_name, guest_email, cabin_name";
 
 // The view returns flat columns. The table expects the shape the old query
 // gave it, so put the nested objects back here and leave the UI alone.

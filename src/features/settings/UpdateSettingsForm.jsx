@@ -3,7 +3,6 @@ import styled from "styled-components";
 import {
   HiOutlineCalendarDays,
   HiOutlineMoon,
-  HiOutlineSun,
   HiOutlineUsers,
 } from "react-icons/hi2";
 
@@ -56,15 +55,6 @@ const SETTINGS = [
     icon: <HiOutlineUsers />,
     color: "blue",
     bounds: () => ({ min: 1, max: 50 }),
-  },
-  {
-    field: "breakfastPrice",
-    title: "Breakfast price",
-    description: "Per guest, per night, in USD. Offered at check in.",
-    icon: <HiOutlineSun />,
-    color: "yellow",
-    prefix: "$",
-    bounds: () => ({ min: 0, max: 500 }),
   },
 ];
 

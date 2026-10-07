@@ -17,7 +17,7 @@ export async function getSettings() {
 export async function updateSetting(newSetting) {
   const { data, error } = await supabase
     .from("settings")
-    // newSetting is one field, like { breakfastPrice: 20 }
+    // newSetting is one field, like { minBookingLength: 3 }
     .update(newSetting)
     // That one row always has id 1
     .eq("id", 1)

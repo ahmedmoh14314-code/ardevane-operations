@@ -27,11 +27,11 @@ import {
   todayISO,
 } from "../../utils/helpers";
 import { BOOKING_SOURCES } from "../../utils/constants";
+import { paymentState } from "../../utils/folio";
 import { useCheckout } from "../check-in-out/useCheckout";
 import { useCabins } from "../cabins/useCabins";
 import { useCancelBooking } from "./useCancelBooking";
 import { useNoShow } from "./useNoShow";
-import { useMarkPaid } from "./useMarkPaid";
 import BookingStatusTag from "./BookingStatusTag";
 
 // A picture and two lines of text side by side: cabin, guest
@@ -104,6 +104,15 @@ const Paid = styled.span`
   }
 `;
 
+// What the row says about the money, from the stay's folio
+function balanceLabel(folio) {
+  const state = paymentState(folio);
+
+  if (state === "paid") return "Paid";
+  if (state === "credit") return "Overpaid";
+  return `${formatCurrency(folio.remaining)} due`;
+}
+
 const Note = styled.span`
   display: inline-flex;
   color: var(--color-yellow-700);
@@ -131,8 +140,10 @@ function BookingRow({
     numNights,
     numGuests,
     totalPrice,
+    folio_total,
+    folio_paid,
+    folio_remaining,
     status,
-    isPaid,
     observations,
     guests: { fullName: guestName, email },
     cabins: { id: cabinId, name: cabinName },
@@ -142,7 +153,6 @@ function BookingRow({
   const { checkout, isCheckingOut } = useCheckout();
   const { cancelBooking, isCancelling } = useCancelBooking();
   const { markNoShow, isMarkingNoShow } = useNoShow();
-  const { markPaid, isMarkingPaid } = useMarkPaid();
 
   // The cabin list is already in the cache, so its photo costs no request
   const { cabins } = useCabins();
@@ -153,6 +163,14 @@ function BookingRow({
   const canCheckIn = isReserved && hasArrived(startDate);
   const canMarkNoShow = isReserved && startDate < todayISO();
   const isClosed = status === "cancelled" || status === "no_show";
+
+  // The total includes the extra charges; payments come off what is due
+  const folio = {
+    total: folio_total ?? totalPrice,
+    paid: folio_paid ?? 0,
+    remaining: folio_remaining ?? totalPrice,
+  };
+  const isSettled = folio.remaining <= 0;
 
   return (
     <Table.Row>
@@ -200,10 +218,8 @@ function BookingRow({
       <BookingStatusTag status={status} />
 
       <Amount>
-        <strong>{formatCurrency(totalPrice)}</strong>
-        {!isClosed && (
-          <Paid $paid={isPaid}>{isPaid ? "Paid" : "Payment due"}</Paid>
-        )}
+        <strong>{formatCurrency(folio.total)}</strong>
+        {!isClosed && <Paid $paid={isSettled}>{balanceLabel(folio)}</Paid>}
       </Amount>
 
       {/* The one thing the desk does next, one click away */}
@@ -259,13 +275,12 @@ function BookingRow({
               </Menus.Button>
             )}
 
-            {!isPaid && !isClosed && (
+            {!isClosed && !isSettled && (
               <Menus.Button
                 icon={<HiBanknotes />}
-                onClick={() => markPaid(bookingId)}
-                disabled={isMarkingPaid}
+                onClick={() => navigate(`/bookings/${bookingId}#folio`)}
               >
-                Mark as paid
+                Take payment
               </Menus.Button>
             )}
 
