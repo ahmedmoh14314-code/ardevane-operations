@@ -2,8 +2,6 @@ import styled from "styled-components";
 
 import Heading from "../../ui/Heading";
 import Row from "../../ui/Row";
-
-import { useTodayActivity } from "./useTodayActivity";
 import Spinner from "../../ui/Spinner";
 import TodayItem from "./TodayItem";
 
@@ -38,8 +36,10 @@ const NoActivity = styled.p`
   margin-top: 0.8rem;
 `;
 
-function TodayActivity() {
-  const { activities, isLoading } = useTodayActivity();
+// Who arrives and who leaves today. The lists come from the dashboard, so
+// the numbers above and these rows always agree.
+function TodayActivity({ arrivals = [], departures = [], isLoading }) {
+  const activities = [...arrivals, ...departures];
 
   return (
     <StyledToday>
@@ -48,14 +48,14 @@ function TodayActivity() {
       </Row>
 
       {!isLoading ? (
-        activities?.length > 0 ? (
+        activities.length > 0 ? (
           <TodayList>
             {activities.map((activity) => (
               <TodayItem activity={activity} key={activity.id} />
             ))}
           </TodayList>
         ) : (
-          <NoActivity>No activity today...</NoActivity>
+          <NoActivity>No arrivals or departures today</NoActivity>
         )
       ) : (
         <Spinner />

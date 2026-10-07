@@ -27,6 +27,7 @@ function ConfirmAction({
   title,
   message,
   confirmLabel,
+  cancelLabel = "Keep it",
   onConfirm,
   disabled,
   onCloseModal,
@@ -47,7 +48,7 @@ function ConfirmAction({
           disabled={disabled}
           onClick={onCloseModal}
         >
-          Keep it
+          {cancelLabel}
         </Button>
         <Button variation="danger" disabled={disabled} onClick={handleConfirm}>
           {confirmLabel}

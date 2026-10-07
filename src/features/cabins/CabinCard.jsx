@@ -1,7 +1,10 @@
 import styled from "styled-components";
+import { Link } from "react-router-dom";
+import { format } from "date-fns";
 import {
   HiArchiveBox,
   HiArrowUturnLeft,
+  HiNoSymbol,
   HiOutlineUsers,
   HiPencil,
   HiSquare2Stack,
@@ -12,12 +15,15 @@ import CreateCabinForm from "./CreateCabinForm";
 import { useDeleteCabin } from "./useDeleteCabin";
 import { useCreateCabin } from "./useCreateCabin";
 import { useToggleCabinActive } from "./useToggleCabinActive";
+import { useCabinCondition } from "./useCabinCondition";
 
 import Modal from "../../ui/Modal";
 import ConfirmDelete from "../../ui/ConfirmDelete";
 import Menus from "../../ui/Menus";
 import Tag from "../../ui/Tag";
-import { formatCurrency } from "../../utils/helpers";
+import Button from "../../ui/Button";
+import { formatCurrency, toDay } from "../../utils/helpers";
+import { cabinCondition, nextConditionStep } from "../../utils/operations";
 
 const Card = styled.article`
   display: flex;
@@ -74,6 +80,18 @@ const DiscountBadge = styled.span`
   border-radius: 100px;
   color: #fff;
   background-color: var(--color-brand-600);
+`;
+
+// The cabin's condition, on the photo, so a glance down the grid is enough.
+// A solid backing keeps it readable on any picture.
+const ConditionSpot = styled.div`
+  position: absolute;
+  left: 1.2rem;
+  bottom: 1.2rem;
+
+  & > span {
+    box-shadow: 0 0.2rem 0.8rem rgba(0, 0, 0, 0.18);
+  }
 `;
 
 // The menu button gets a white disc so it shows on any photo
@@ -143,6 +161,34 @@ const Price = styled.p`
   }
 `;
 
+// Who is staying, when someone is: occupancy comes from the bookings, not
+// from the cabin's condition
+const Occupant = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.35rem;
+  color: var(--color-grey-600);
+
+  &::before {
+    content: "";
+    flex-shrink: 0;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background-color: var(--color-indigo-700);
+  }
+
+  & strong {
+    font-weight: 500;
+    color: var(--color-grey-800);
+  }
+
+  &:hover strong {
+    color: var(--color-brand-600);
+  }
+`;
+
 // Pinned to the bottom, so every card in a row lines up
 const Footer = styled.div`
   margin-top: auto;
@@ -168,10 +214,11 @@ const Capacity = styled.span`
   }
 `;
 
-function CabinCard({ cabin }) {
+function CabinCard({ cabin, stay }) {
   const { isDeleting, deleteCabin } = useDeleteCabin();
   const { isCreating, createCabin } = useCreateCabin();
   const { toggleActive } = useToggleCabinActive();
+  const { changeCondition, isChanging } = useCabinCondition();
 
   const {
     id: cabinId,
@@ -182,7 +229,12 @@ function CabinCard({ cabin }) {
     image,
     description,
     is_active: isActive = true,
+    condition = "ready",
   } = cabin;
+
+  const { label: conditionLabel, tag: conditionTag } =
+    cabinCondition(condition);
+  const nextStep = nextConditionStep(condition);
 
   // What a guest actually pays per night
   const nightlyPrice = regularPrice - (discount || 0);
@@ -209,6 +261,12 @@ function CabinCard({ cabin }) {
           </TopLeft>
         )}
 
+        {isActive && (
+          <ConditionSpot>
+            <Tag type={conditionTag}>{conditionLabel}</Tag>
+          </ConditionSpot>
+        )}
+
         <MenuSpot>
           <Modal>
             <Menus.Menu>
@@ -226,6 +284,20 @@ function CabinCard({ cabin }) {
                 <Modal.Open opens="edit">
                   <Menus.Button icon={<HiPencil />}>Edit</Menus.Button>
                 </Modal.Open>
+
+                {condition !== "out_of_service" && (
+                  <Menus.Button
+                    icon={<HiNoSymbol />}
+                    onClick={() =>
+                      changeCondition({
+                        id: cabinId,
+                        condition: "out_of_service",
+                      })
+                    }
+                  >
+                    Take out of service
+                  </Menus.Button>
+                )}
 
                 {/* Archiving keeps the booking history, deleting does not */}
                 <Menus.Button
@@ -269,15 +341,38 @@ function CabinCard({ cabin }) {
           </Price>
         </TitleRow>
 
+        {stay && (
+          <Occupant to={`/bookings/${stay.id}`}>
+            <span>
+              In house: <strong>{stay.guests.fullName}</strong> until{" "}
+              {format(toDay(stay.endDate), "MMM d")}
+            </span>
+          </Occupant>
+        )}
+
         <Footer>
           <Capacity>
             <HiOutlineUsers />
             Up to {maxCapacity} guests
           </Capacity>
 
-          <Tag type={isActive ? "green" : "silver"}>
-            {isActive ? "Available" : "Archived"}
-          </Tag>
+          {/* The usual next step for the cabin, one click away */}
+          {!isActive ? (
+            <Tag type="silver">Archived</Tag>
+          ) : (
+            nextStep && (
+              <Button
+                size="small"
+                variation={condition === "dirty" ? "primary" : "secondary"}
+                disabled={isChanging}
+                onClick={() =>
+                  changeCondition({ id: cabinId, condition: nextStep.to })
+                }
+              >
+                {nextStep.label}
+              </Button>
+            )
+          )}
         </Footer>
       </Body>
     </Card>

@@ -151,3 +151,20 @@ export async function deleteCabinImage(imageId) {
     throw new Error("Image could not be deleted");
   }
 }
+
+// Ready, dirty, cleaning or out of service
+export async function setCabinCondition({ id, condition }) {
+  const { data, error } = await supabase
+    .from("cabins")
+    .update({ condition })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("The cabin's condition could not be changed");
+  }
+
+  return data;
+}

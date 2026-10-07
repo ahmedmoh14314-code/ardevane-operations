@@ -5,6 +5,7 @@ import { HiOutlineHomeModern } from "react-icons/hi2";
 import CabinCard from "./CabinCard";
 import { useCabins } from "./useCabins";
 import AddCabin from "./AddCabin";
+import { useTodayActivity } from "../check-in-out/useTodayActivity";
 
 import Menus from "../../ui/Menus";
 import Button from "../../ui/Button";
@@ -54,6 +55,8 @@ function GridSkeleton() {
 function CabinGrid() {
   const { isLoading, cabins, error } = useCabins();
   const [searchParams, setSearchParams] = useSearchParams();
+  // Who is staying in each cabin: occupancy comes from the bookings
+  const { inHouse } = useTodayActivity();
 
   if (isLoading) return <GridSkeleton />;
 
@@ -128,7 +131,11 @@ function CabinGrid() {
     <Menus>
       <Grid>
         {sortedCabins.map((cabin) => (
-          <CabinCard cabin={cabin} key={cabin.id} />
+          <CabinCard
+            cabin={cabin}
+            stay={inHouse.find((booking) => booking.cabinId === cabin.id)}
+            key={cabin.id}
+          />
         ))}
       </Grid>
     </Menus>

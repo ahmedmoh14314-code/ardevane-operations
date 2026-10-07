@@ -94,25 +94,44 @@ export async function getStaysAfterDate(day) {
   return data;
 }
 
-// Guests arriving or leaving today: reserved and starting today, or checked
-// in and leaving today. Stays are days now, so an exact match is right.
-export async function getStaysTodayActivity() {
+// Everything the desk works from today: arrivals, and every stay that is
+// checked in (some of them leave today). Each comes with its folio, so the
+// desk can see what is still owed.
+export async function getTodayBoard() {
   const today = todayISO();
 
-  const { data, error } = await supabase
+  const { data: bookings, error } = await supabase
     .from("bookings")
-    .select("*, guests(fullName, nationality, countryFlag)")
-    .or(
-      `and(status.eq.reserved,startDate.eq.${today}),and(status.eq.checked_in,endDate.eq.${today})`,
+    .select(
+      "id, reference, status, startDate, endDate, numNights, numGuests, cabinId, guests(fullName, nationality, countryFlag), cabins(name)",
     )
-    .order("created_at");
+    .or(`and(status.eq.reserved,startDate.eq.${today}),status.eq.checked_in`)
+    .order("startDate");
 
   if (error) {
     console.error(error);
-    throw new Error("Bookings could not get loaded");
+    throw new Error("Today's bookings could not be loaded");
   }
 
-  return data;
+  if (!bookings.length) return [];
+
+  const { data: folios, error: folioError } = await supabase
+    .from("booking_folios")
+    .select("bookingId, total, paid, remaining")
+    .in(
+      "bookingId",
+      bookings.map((booking) => booking.id),
+    );
+
+  if (folioError) {
+    console.error(folioError);
+    throw new Error("Today's bookings could not be loaded");
+  }
+
+  return bookings.map((booking) => ({
+    ...booking,
+    folio: folios.find((folio) => folio.bookingId === booking.id),
+  }));
 }
 
 // Change any field on a booking

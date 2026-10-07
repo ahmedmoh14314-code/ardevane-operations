@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { getStaysTodayActivity } from "../../services/apiBookings";
+import { getTodayBoard } from "../../services/apiBookings";
+import { todayISO } from "../../utils/helpers";
+import { splitToday } from "../../utils/operations";
 
+// Arrivals, departures and the guests in house, from one request
 export function useTodayActivity() {
-  const { isLoading, data: activities } = useQuery({
-    queryFn: getStaysTodayActivity,
+  const { isLoading, data } = useQuery({
+    queryFn: getTodayBoard,
     queryKey: ["today-activity"],
   });
 
-  return { activities, isLoading };
+  return { isLoading, ...splitToday(data, todayISO()) };
 }
