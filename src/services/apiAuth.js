@@ -1,6 +1,23 @@
 import supabase, { supabaseUrl } from "./supabase";
 
-export async function signup({ fullName, email, password }) {
+// Signing in is not enough to use Operations: guests sign in too, on the
+// guest website. Staff are the accounts with an active staff_members row.
+async function getStaffMembership(userId) {
+  const { data, error } = await supabase
+    .from("staff_members")
+    .select("role, fullName, isActive")
+    .eq("userId", userId)
+    .eq("isActive", true)
+    .maybeSingle();
+
+  if (error) throw new Error("Your access could not be checked");
+
+  return data;
+}
+
+// Creates the sign-in account and adds it to the team in one go. Only an
+// admin may add staff; the database refuses anyone else.
+export async function createStaffMember({ fullName, email, password, role }) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -18,6 +35,20 @@ export async function signup({ fullName, email, password }) {
 
   if (error) throw new Error(error.message);
 
+  // Supabase answers an address that is already registered with a user that
+  // has no identities, without telling which addresses exist
+  if (!data.user || data.user.identities?.length === 0)
+    throw new Error("This email address already has an account");
+
+  const { error: staffError } = await supabase
+    .from("staff_members")
+    .insert([{ userId: data.user.id, fullName, role }]);
+
+  if (staffError)
+    throw new Error(
+      "The account was created, but it could not be added to the team",
+    );
+
   return data;
 }
 
@@ -27,9 +58,17 @@ export async function login({ email, password }) {
     password,
   });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new Error("Email or password is incorrect");
 
-  return data;
+  const staff = await getStaffMembership(data.user.id);
+
+  // A guest account, or a member of staff who was removed from the team
+  if (!staff) {
+    await supabase.auth.signOut();
+    throw new Error("This account doesn't have access to Ardevane Operations");
+  }
+
+  return { ...data.user, staff };
 }
 
 export async function getCurrentUser() {
@@ -41,7 +80,9 @@ export async function getCurrentUser() {
 
   if (error) throw new Error(error.message);
 
-  return data?.user;
+  const staff = await getStaffMembership(data.user.id);
+
+  return { ...data.user, staff };
 }
 
 export async function logout() {

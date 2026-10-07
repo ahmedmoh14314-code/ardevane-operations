@@ -7,5 +7,6 @@ export function useUser() {
     queryFn: getCurrentUser,
   });
 
-  return { isLoading, user, isAuthenticated: user?.role === "authenticated" };
+  // Being signed in is not enough: guests have accounts too
+  return { isLoading, user, isStaff: Boolean(user?.staff) };
 }

@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { useUser } from "./useUser";
 import InitialsAvatar from "../../ui/InitialsAvatar";
 import { below } from "../../styles/breakpoints";
+import { staffRoleLabel } from "../../utils/constants";
 
 const StyledUserAvatar = styled.div`
   display: flex;
@@ -53,7 +54,7 @@ function UserAvatar() {
 
       <Who>
         <Name>{fullName}</Name>
-        <Role>Administrator</Role>
+        <Role>{staffRoleLabel(user.staff?.role)}</Role>
       </Who>
     </StyledUserAvatar>
   );

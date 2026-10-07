@@ -15,7 +15,7 @@ export function useLogin() {
     mutationFn: ({ email, password }) => loginApi({ email, password }),
 
     onSuccess: (user) => {
-      queryClient.setQueryData(["user"], user.user);
+      queryClient.setQueryData(["user"], user);
 
       // The card leaves first and the welcome splash takes over. With
       // reduced motion turned on, both still happen, as a plain fade.
@@ -28,10 +28,7 @@ export function useLogin() {
       );
     },
 
-    onError: (err) => {
-      console.log("ERROR", err);
-      toast.error("Provided email or password are incorrect");
-    },
+    onError: (err) => toast.error(err.message),
   });
 
   return { login, isLoading, isLeaving };

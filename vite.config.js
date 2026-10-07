@@ -1,5 +1,6 @@
 import path from "path";
 import { defineConfig } from "vite";
+import { configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import eslint from "vite-plugin-eslint";
 
@@ -11,6 +12,11 @@ export default defineConfig({
 
   // The code imports from the top of src/ ("ui/Button", "features/cabins/CabinRow").
   // CRA gets that from jsconfig's baseUrl; Vite needs these aliases instead.
+  // The database access tests need a live project: npm run test:db
+  test: {
+    exclude: [...configDefaults.exclude, "supabase/**"],
+  },
+
   resolve: {
     alias: {
       context: fromSrc("context"),

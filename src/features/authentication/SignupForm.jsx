@@ -4,16 +4,20 @@ import Form from "../../ui/Form";
 import FormRow from "../../ui/FormRow";
 import Input from "../../ui/Input";
 import PasswordInput from "../../ui/PasswordInput";
+import Select from "../../ui/Select";
+import { STAFF_ROLES } from "../../utils/constants";
 import { useSignup } from "./useSignup";
 
 function SignupForm() {
   const { signup, isLoading } = useSignup();
-  const { register, formState, getValues, handleSubmit, reset } = useForm();
+  const { register, formState, getValues, handleSubmit, reset } = useForm({
+    defaultValues: { role: "front_desk" },
+  });
   const { errors } = formState;
 
-  function onSubmit({ fullName, email, password }) {
+  function onSubmit({ fullName, email, password, role }) {
     signup(
-      { fullName, email, password },
+      { fullName, email, password, role },
       {
         onSettled: () => reset(),
       },
@@ -43,6 +47,15 @@ function SignupForm() {
               message: "Please provide a valid email address",
             },
           })}
+        />
+      </FormRow>
+
+      <FormRow label="Role">
+        <Select
+          id="role"
+          options={STAFF_ROLES}
+          disabled={isLoading}
+          {...register("role")}
         />
       </FormRow>
 
@@ -86,7 +99,7 @@ function SignupForm() {
         >
           Cancel
         </Button>
-        <Button disabled={isLoading}>Create new user</Button>
+        <Button disabled={isLoading}>Add to team</Button>
       </FormRow>
     </Form>
   );
