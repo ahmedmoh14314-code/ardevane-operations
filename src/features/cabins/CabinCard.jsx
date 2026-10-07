@@ -16,14 +16,13 @@ import { useDeleteCabin } from "./useDeleteCabin";
 import { useCreateCabin } from "./useCreateCabin";
 import { useToggleCabinActive } from "./useToggleCabinActive";
 import { useCabinCondition } from "./useCabinCondition";
+import HousekeepingTrack from "./HousekeepingTrack";
 
 import Modal from "../../ui/Modal";
 import ConfirmDelete from "../../ui/ConfirmDelete";
 import Menus from "../../ui/Menus";
 import Tag from "../../ui/Tag";
-import Button from "../../ui/Button";
 import { formatCurrency, toDay } from "../../utils/helpers";
-import { cabinCondition, nextConditionStep } from "../../utils/operations";
 
 const Card = styled.article`
   display: flex;
@@ -60,7 +59,34 @@ const Photo = styled.div`
     height: 100%;
     object-fit: cover;
     opacity: ${(props) => (props.$archived ? 0.45 : 1)};
-    filter: ${(props) => (props.$archived ? "grayscale(60%)" : "none")};
+    filter: ${(props) =>
+      props.$archived || props.$closed ? "grayscale(70%)" : "none"};
+    transition: filter 0.3s;
+  }
+`;
+
+// Laid over the photo while the cabin is out of service
+const ClosedOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 0, 0, 0.12) 0 1.2rem,
+    rgba(0, 0, 0, 0.28) 1.2rem 2.4rem
+  );
+
+  & span {
+    padding: 0.6rem 1.6rem;
+    border-radius: 100px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
   }
 `;
 
@@ -80,18 +106,6 @@ const DiscountBadge = styled.span`
   border-radius: 100px;
   color: #fff;
   background-color: var(--color-brand-600);
-`;
-
-// The cabin's condition, on the photo, so a glance down the grid is enough.
-// A solid backing keeps it readable on any picture.
-const ConditionSpot = styled.div`
-  position: absolute;
-  left: 1.2rem;
-  bottom: 1.2rem;
-
-  & > span {
-    box-shadow: 0 0.2rem 0.8rem rgba(0, 0, 0, 0.18);
-  }
 `;
 
 // The menu button gets a white disc so it shows on any photo
@@ -218,7 +232,7 @@ function CabinCard({ cabin, stay }) {
   const { isDeleting, deleteCabin } = useDeleteCabin();
   const { isCreating, createCabin } = useCreateCabin();
   const { toggleActive } = useToggleCabinActive();
-  const { changeCondition, isChanging } = useCabinCondition();
+  const { changeCondition } = useCabinCondition();
 
   const {
     id: cabinId,
@@ -231,10 +245,6 @@ function CabinCard({ cabin, stay }) {
     is_active: isActive = true,
     condition = "ready",
   } = cabin;
-
-  const { label: conditionLabel, tag: conditionTag } =
-    cabinCondition(condition);
-  const nextStep = nextConditionStep(condition);
 
   // What a guest actually pays per night
   const nightlyPrice = regularPrice - (discount || 0);
@@ -252,19 +262,22 @@ function CabinCard({ cabin, stay }) {
 
   return (
     <Card>
-      <Photo $archived={!isActive}>
+      <Photo
+        $archived={!isActive}
+        $closed={isActive && condition === "out_of_service"}
+      >
         <img src={image} alt={`Cabin ${name}`} loading="lazy" />
+
+        {isActive && condition === "out_of_service" && (
+          <ClosedOverlay>
+            <span>Out of service</span>
+          </ClosedOverlay>
+        )}
 
         {discount > 0 && (
           <TopLeft>
             <DiscountBadge>Save {formatCurrency(discount)}</DiscountBadge>
           </TopLeft>
-        )}
-
-        {isActive && (
-          <ConditionSpot>
-            <Tag type={conditionTag}>{conditionLabel}</Tag>
-          </ConditionSpot>
         )}
 
         <MenuSpot>
@@ -350,29 +363,17 @@ function CabinCard({ cabin, stay }) {
           </Occupant>
         )}
 
+        {isActive && (
+          <HousekeepingTrack cabinId={cabinId} condition={condition} />
+        )}
+
         <Footer>
           <Capacity>
             <HiOutlineUsers />
             Up to {maxCapacity} guests
           </Capacity>
 
-          {/* The usual next step for the cabin, one click away */}
-          {!isActive ? (
-            <Tag type="silver">Archived</Tag>
-          ) : (
-            nextStep && (
-              <Button
-                size="small"
-                variation={condition === "dirty" ? "primary" : "secondary"}
-                disabled={isChanging}
-                onClick={() =>
-                  changeCondition({ id: cabinId, condition: nextStep.to })
-                }
-              >
-                {nextStep.label}
-              </Button>
-            )
-          )}
+          {!isActive && <Tag type="silver">Archived</Tag>}
         </Footer>
       </Body>
     </Card>

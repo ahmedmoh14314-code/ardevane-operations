@@ -16,6 +16,7 @@ const StyledToday = styled.div`
   gap: 2.4rem;
   grid-column: 1 / span 2;
   padding-top: 2.4rem;
+  scroll-margin-top: 2.4rem;
 `;
 
 const TodayList = styled.ul`
@@ -42,7 +43,7 @@ function TodayActivity({ arrivals = [], departures = [], isLoading }) {
   const activities = [...arrivals, ...departures];
 
   return (
-    <StyledToday>
+    <StyledToday id="today">
       <Row type="horizontal">
         <Heading as="h2">Today</Heading>
       </Row>

@@ -96,7 +96,15 @@ function CabinGrid() {
       (cabin) => cabin.is_active === false,
     );
 
-  // 3. Sort
+  // 3. Filter by condition (the dashboard links straight to these)
+  const conditionValue = searchParams.get("condition") || "all";
+
+  if (conditionValue !== "all")
+    filteredCabins = filteredCabins.filter(
+      (cabin) => cabin.condition === conditionValue,
+    );
+
+  // 4. Sort
   const sortBy = searchParams.get("sortBy") || "name-asc";
   const [field, direction] = sortBy.split("-");
   const modifier = direction === "asc" ? 1 : -1;
@@ -110,6 +118,7 @@ function CabinGrid() {
   function clearFilters() {
     searchParams.delete("discount");
     searchParams.delete("status");
+    searchParams.delete("condition");
     setSearchParams(searchParams);
   }
 
@@ -121,7 +130,9 @@ function CabinGrid() {
         description={
           statusValue === "archived"
             ? "Nothing has been archived yet."
-            : "Try a different discount or status filter."
+            : conditionValue !== "all"
+              ? "No open cabin is in that condition right now."
+              : "Try a different discount or status filter."
         }
         action={<Button onClick={clearFilters}>Clear filters</Button>}
       />

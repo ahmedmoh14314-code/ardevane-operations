@@ -37,8 +37,10 @@ export function useCabinCondition() {
       );
     },
 
+    // An open booking shows its cabin's condition too
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["cabins"] });
+      queryClient.invalidateQueries({ queryKey: ["booking"] });
     },
   });
 

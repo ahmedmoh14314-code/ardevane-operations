@@ -5,6 +5,7 @@ import { HiArrowUpOnSquare } from "react-icons/hi2";
 import BookingDataBox from "./BookingDataBox";
 import BookingStatusTag from "./BookingStatusTag";
 import StayFolio from "../folio/StayFolio";
+import CabinReadiness from "../cabins/CabinReadiness";
 import Row from "../../ui/Row";
 import Heading from "../../ui/Heading";
 import ButtonGroup from "../../ui/ButtonGroup";
@@ -72,6 +73,10 @@ function BookingDetail() {
       </Row>
 
       <BookingDataBox booking={booking} />
+
+      {(isReserved || status === "checked_in") && (
+        <CabinReadiness cabin={booking.cabins} status={status} />
+      )}
 
       <StayFolio booking={booking} />
 

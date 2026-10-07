@@ -9,6 +9,7 @@ import { formatCurrency, toDay } from "../../utils/helpers";
 
 const StyledInHouse = styled(DashboardBox)`
   grid-column: 1 / -1;
+  scroll-margin-top: 2.4rem;
 `;
 
 const List = styled.ul`
@@ -105,7 +106,7 @@ const Empty = styled.p`
 // just those bookings, with what each one has paid so far.
 function InHouse({ stays = [] }) {
   return (
-    <StyledInHouse>
+    <StyledInHouse id="in-house">
       <BoxHeader
         title="In house"
         subtitle={

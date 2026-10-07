@@ -43,6 +43,7 @@ const Grid = styled.div`
 
 // The first thing on the dashboard: what needs attention today. People
 // first (arrivals, departures, in house), then the cabins that aren't ready.
+// Each number opens the list behind it.
 function TodaySummary({ arrivals, departures, inHouse, conditions }) {
   return (
     <StyledTodaySummary aria-label="Today">
@@ -54,36 +55,42 @@ function TodaySummary({ arrivals, departures, inHouse, conditions }) {
           color="green"
           icon={<HiOutlineArrowDownOnSquare />}
           value={arrivals}
+          to="#today"
         />
         <Stat
           title="Departures"
           color="yellow"
           icon={<HiOutlineArrowUpOnSquare />}
           value={departures}
+          to="#today"
         />
         <Stat
           title="In house"
           color="indigo"
           icon={<HiOutlineHome />}
           value={inHouse}
+          to="#in-house"
         />
         <Stat
           title="Dirty"
           color="red"
           icon={<HiOutlineTrash />}
           value={conditions.dirty}
+          to="/cabins?condition=dirty"
         />
         <Stat
           title="Cleaning"
           color="blue"
           icon={<HiOutlineSparkles />}
           value={conditions.cleaning}
+          to="/cabins?condition=cleaning"
         />
         <Stat
           title="Out of service"
           color="silver"
           icon={<HiOutlineNoSymbol />}
           value={conditions.out_of_service}
+          to="/cabins?condition=out_of_service"
         />
       </Grid>
     </StyledTodaySummary>

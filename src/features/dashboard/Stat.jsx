@@ -1,4 +1,5 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
+import { Link } from "react-router-dom";
 import { useCountUp } from "../../hooks/useCountUp";
 
 const StyledStat = styled.div`
@@ -13,6 +14,29 @@ const StyledStat = styled.div`
   grid-template-rows: auto auto;
   column-gap: 1.6rem;
   row-gap: 0.4rem;
+
+  /* A stat that opens the list behind its number */
+  ${(props) =>
+    props.$link &&
+    css`
+      cursor: pointer;
+      transition:
+        box-shadow 0.2s,
+        transform 0.2s,
+        border-color 0.2s;
+
+      &:hover {
+        border-color: var(--color-grey-200);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        &:hover {
+          transform: none;
+        }
+      }
+    `}
 `;
 
 const Icon = styled.div`
@@ -49,15 +73,42 @@ const Value = styled.p`
   color: var(--color-grey-800);
 `;
 
-// value is a plain number; format turns it into what is shown, like $1,200
-function Stat({ icon, title, value, format = (n) => n, color }) {
+// value is a plain number; format turns it into what is shown, like $1,200.
+// With "to", the stat opens what it counts: another page ("/cabins?…") or
+// a section further down this one ("#in-house").
+function Stat({ icon, title, value, format = (n) => n, color, to }) {
   const shown = useCountUp(Number.isFinite(value) ? value : 0);
 
-  return (
-    <StyledStat>
+  const content = (
+    <>
       <Icon color={color}>{icon}</Icon>
       <Title>{title}</Title>
       <Value>{format(shown)}</Value>
+    </>
+  );
+
+  if (!to) return <StyledStat>{content}</StyledStat>;
+
+  if (to.startsWith("#"))
+    return (
+      <StyledStat
+        as="a"
+        href={to}
+        $link
+        onClick={(e) => {
+          e.preventDefault();
+          document
+            .getElementById(to.slice(1))
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
+      >
+        {content}
+      </StyledStat>
+    );
+
+  return (
+    <StyledStat as={Link} to={to} $link>
+      {content}
     </StyledStat>
   );
 }

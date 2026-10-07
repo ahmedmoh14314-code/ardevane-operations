@@ -3,6 +3,7 @@ import { format } from "date-fns";
 
 import BookingDataBox from "../../features/bookings/BookingDataBox";
 import StayFolio from "../folio/StayFolio";
+import CabinReadiness from "../cabins/CabinReadiness";
 import Row from "../../ui/Row";
 import Heading from "../../ui/Heading";
 import ButtonGroup from "../../ui/ButtonGroup";
@@ -60,6 +61,10 @@ function CheckinBooking() {
           This stay starts on {format(toDay(startDate), "EEEE, MMM d")}. Check
           in opens on the arrival day.
         </Notice>
+      )}
+
+      {status === "reserved" && (
+        <CabinReadiness cabin={booking.cabins} status={status} />
       )}
 
       <StayFolio booking={booking} />

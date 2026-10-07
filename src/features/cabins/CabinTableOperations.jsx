@@ -15,6 +15,17 @@ function CabinTableOperations() {
       />
 
       <Filter
+        filterField="condition"
+        options={[
+          { value: "all", label: "Any condition" },
+          { value: "ready", label: "Ready" },
+          { value: "dirty", label: "Dirty" },
+          { value: "cleaning", label: "Cleaning" },
+          { value: "out_of_service", label: "Out of service" },
+        ]}
+      />
+
+      <Filter
         filterField="discount"
         options={[
           { value: "all", label: "All" },

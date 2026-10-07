@@ -190,6 +190,24 @@ describe("guests", () => {
     expect(data.paid).toBe(100);
   });
 
+  it("can't change or remove a charge or a payment on their own stay", async () => {
+    const before = await folioOf(frontDesk.client, booking.id);
+
+    await guest.client
+      .from("charges")
+      .update({ amount: 1 })
+      .eq("bookingId", booking.id);
+    await guest.client.from("charges").delete().eq("bookingId", booking.id);
+    await guest.client
+      .from("payments")
+      .update({ amount: 99999 })
+      .eq("bookingId", booking.id);
+    await guest.client.from("payments").delete().eq("bookingId", booking.id);
+
+    const after = await folioOf(frontDesk.client, booking.id);
+    expect(after.data).toEqual(before.data);
+  });
+
   it("see the folio of their own stay, and no one else's", async () => {
     const own = await folioOf(guest.client, booking.id);
     const staffView = await folioOf(frontDesk.client, booking.id);
