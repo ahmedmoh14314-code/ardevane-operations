@@ -18,6 +18,7 @@ const Booking = lazy(() => import("./pages/Booking"));
 const Checkin = lazy(() => import("./pages/Checkin"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const Cabins = lazy(() => import("./pages/Cabins"));
+const Requests = lazy(() => import("./pages/Requests"));
 const Guests = lazy(() => import("./pages/Guests"));
 const Guest = lazy(() => import("./pages/Guest"));
 const Team = lazy(() => import("./pages/Team"));
@@ -64,6 +65,7 @@ function App() {
 
                 <Route path="calendar" element={<Calendar />} />
                 <Route path="cabins" element={<Cabins />} />
+                <Route path="requests" element={<Requests />} />
 
                 <Route path="guests" element={<Guests />} />
                 <Route path="guests/:guestId" element={<Guest />} />

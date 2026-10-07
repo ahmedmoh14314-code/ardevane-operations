@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import {
   HiChevronDown,
+  HiOutlineBellAlert,
   HiOutlineCalendarDays,
   HiOutlineCog6Tooth,
   HiOutlineHome,
@@ -140,6 +141,7 @@ const SECTIONS = [
     items: [
       { to: "/bookings", label: "Bookings", icon: <HiOutlineRectangleStack /> },
       { to: "/calendar", label: "Calendar", icon: <HiOutlineCalendarDays /> },
+      { to: "/requests", label: "Requests", icon: <HiOutlineBellAlert /> },
       { to: "/cabins", label: "Cabins", icon: <HiOutlineHomeModern /> },
       { to: "/guests", label: "Guests", icon: <HiOutlineUserGroup /> },
     ],
