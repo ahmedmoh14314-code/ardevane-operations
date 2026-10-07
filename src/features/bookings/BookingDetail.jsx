@@ -1,35 +1,45 @@
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
+import { HiArrowUpOnSquare } from "react-icons/hi2";
 
 import BookingDataBox from "./BookingDataBox";
+import BookingStatusTag from "./BookingStatusTag";
 import Row from "../../ui/Row";
 import Heading from "../../ui/Heading";
-import Tag from "../../ui/Tag";
 import ButtonGroup from "../../ui/ButtonGroup";
 import Button from "../../ui/Button";
 import ButtonText from "../../ui/ButtonText";
 import Breadcrumb from "../../ui/Breadcrumb";
+import Spinner from "../../ui/Spinner";
+import Modal from "../../ui/Modal";
+import ConfirmAction from "../../ui/ConfirmAction";
+import Empty from "../../ui/Empty";
 
 import { useMoveBack } from "../../hooks/useMoveBack";
 import { useBooking } from "./useBooking";
-import Spinner from "../../ui/Spinner";
-import { useNavigate } from "react-router-dom";
-import { HiArrowUpOnSquare } from "react-icons/hi2";
 import { useCheckout } from "../check-in-out/useCheckout";
-import Modal from "../../ui/Modal";
-import ConfirmDelete from "../../ui/ConfirmDelete";
-import { useDeleteBooking } from "./useDeleteBooking";
-import Empty from "../../ui/Empty";
+import { useCancelBooking } from "./useCancelBooking";
+import { useNoShow } from "./useNoShow";
+import { hasArrived, todayISO } from "../../utils/helpers";
+import { BOOKING_SOURCES } from "../../utils/constants";
 
 const HeadingGroup = styled.div`
   display: flex;
-  gap: 2.4rem;
+  flex-wrap: wrap;
+  gap: 1.2rem 2.4rem;
   align-items: center;
+`;
+
+const Source = styled.span`
+  font-size: 1.4rem;
+  color: var(--color-grey-500);
 `;
 
 function BookingDetail() {
   const { booking, isLoading } = useBooking();
   const { checkout, isCheckingOut } = useCheckout();
-  const { deleteBooking, isDeleting } = useDeleteBooking();
+  const { cancelBooking, isCancelling } = useCancelBooking();
+  const { markNoShow, isMarkingNoShow } = useNoShow();
 
   const moveBack = useMoveBack();
   const navigate = useNavigate();
@@ -38,24 +48,24 @@ function BookingDetail() {
 
   if (!booking) return <Empty resourceName="booking" />;
 
-  const { status, id: bookingId } = booking;
+  const { status, id: bookingId, reference, source, startDate } = booking;
 
-  const statusToTagName = {
-    unconfirmed: "yellow",
-    "checked-in": "green",
-    "checked-out": "silver",
-  };
+  // Check in from the arrival day; a no-show only once that day has passed
+  const isReserved = status === "reserved";
+  const canCheckIn = isReserved && hasArrived(startDate);
+  const canMarkNoShow = isReserved && startDate < todayISO();
 
   return (
     <>
       <Breadcrumb to="/bookings" parent="Bookings">
-        Booking #{bookingId}
+        Booking {reference}
       </Breadcrumb>
 
       <Row type="horizontal">
         <HeadingGroup>
-          <Heading as="h1">Booking #{bookingId}</Heading>
-          <Tag type={statusToTagName[status]}>{status.replace("-", " ")}</Tag>
+          <Heading as="h1">Booking {reference}</Heading>
+          <BookingStatusTag status={status} />
+          <Source>Booked via {BOOKING_SOURCES[source]}</Source>
         </HeadingGroup>
         <ButtonText onClick={moveBack}>&larr; Back</ButtonText>
       </Row>
@@ -63,13 +73,13 @@ function BookingDetail() {
       <BookingDataBox booking={booking} />
 
       <ButtonGroup>
-        {status === "unconfirmed" && (
+        {canCheckIn && (
           <Button onClick={() => navigate(`/checkin/${bookingId}`)}>
             Check in
           </Button>
         )}
 
-        {status === "checked-in" && (
+        {status === "checked_in" && (
           <Button
             variation="secondary"
             onClick={() => checkout(bookingId)}
@@ -81,19 +91,35 @@ function BookingDetail() {
         )}
 
         <Modal>
-          <Modal.Open opens="delete">
-            <Button variation="danger">Delete booking</Button>
-          </Modal.Open>
+          {canMarkNoShow && (
+            <Modal.Open opens="no-show">
+              <Button variation="secondary">Mark as no-show</Button>
+            </Modal.Open>
+          )}
 
-          <Modal.Window name="delete">
-            <ConfirmDelete
-              resourceName="booking"
-              disabled={isDeleting}
-              onConfirm={() =>
-                deleteBooking(bookingId, {
-                  onSettled: () => navigate(-1),
-                })
-              }
+          {isReserved && (
+            <Modal.Open opens="cancel">
+              <Button variation="danger">Cancel booking</Button>
+            </Modal.Open>
+          )}
+
+          <Modal.Window name="cancel">
+            <ConfirmAction
+              title={`Cancel ${reference}`}
+              message="The stay will be cancelled and its nights freed. The booking stays on record."
+              confirmLabel="Cancel booking"
+              disabled={isCancelling}
+              onConfirm={() => cancelBooking(bookingId)}
+            />
+          </Modal.Window>
+
+          <Modal.Window name="no-show">
+            <ConfirmAction
+              title="The guest didn't arrive"
+              message={`${reference} will be marked as a no-show and its remaining nights freed. The booking stays on record.`}
+              confirmLabel="Mark as no-show"
+              disabled={isMarkingNoShow}
+              onConfirm={() => markNoShow(bookingId)}
             />
           </Modal.Window>
         </Modal>

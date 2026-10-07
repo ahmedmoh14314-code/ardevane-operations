@@ -30,14 +30,14 @@ function TodayItem({ activity }) {
 
   return (
     <StyledTodayItem>
-      {status === "unconfirmed" && <Tag type="green">Arriving</Tag>}
-      {status === "checked-in" && <Tag type="red">Departing</Tag>}
+      {status === "reserved" && <Tag type="green">Arriving</Tag>}
+      {status === "checked_in" && <Tag type="red">Departing</Tag>}
 
       <Flag src={guests.countryFlag} alt={`Flag of ${guests.country}`} />
       <Guest>{guests.fullName}</Guest>
       <div>{numNights} nights</div>
 
-      {status === "unconfirmed" && (
+      {status === "reserved" && (
         <Button
           size="small"
           variation="primary"
@@ -47,7 +47,7 @@ function TodayItem({ activity }) {
           Check in
         </Button>
       )}
-      {status === "checked-in" && <CheckoutButton bookingId={id} />}
+      {status === "checked_in" && <CheckoutButton bookingId={id} />}
     </StyledTodayItem>
   );
 }

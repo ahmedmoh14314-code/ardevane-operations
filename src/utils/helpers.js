@@ -1,10 +1,4 @@
-import {
-  differenceInDays,
-  endOfDay,
-  formatDistance,
-  parseISO,
-  startOfDay,
-} from "date-fns";
+import { differenceInDays, format, formatDistance, parseISO } from "date-fns";
 
 // Whole days between two dates
 export const subtractDates = (dateStr1, dateStr2) =>
@@ -31,17 +25,19 @@ export const getToday = function (options = {}) {
   return today.toISOString();
 };
 
-// The first and last moment of today where the hotel is, as ISO strings.
-// A stay counts as today whatever hour it was saved with, and the day turns
-// over at local midnight rather than at midnight in London.
-export const getTodayRange = function () {
-  const now = new Date();
+// A stay's dates arrive from the database as "2026-11-02". parseISO reads
+// that as the day itself, here; new Date() would read it as midnight in
+// London, a day early anywhere west of it.
+export const toDay = (value) =>
+  typeof value === "string" ? parseISO(value) : value;
 
-  return {
-    start: startOfDay(now).toISOString(),
-    end: endOfDay(now).toISOString(),
-  };
-};
+// A Date as the database writes a day: "2026-11-02"
+export const toISODate = (date) => format(date, "yyyy-MM-dd");
+
+export const todayISO = () => toISODate(new Date());
+
+// Has the arrival day come? Days written this way compare as text.
+export const hasArrived = (startDate) => startDate <= todayISO();
 
 // Turns 1200 into $1,200.00
 export const formatCurrency = (value) =>

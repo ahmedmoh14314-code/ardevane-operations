@@ -1,11 +1,21 @@
-import { getToday, getTodayRange } from "../utils/helpers";
+import { getToday, todayISO } from "../utils/helpers";
 import supabase from "./supabase";
 import { PAGE_SIZE } from "../utils/constants";
+
+// When the database refuses a booking it says why, in plain words (code
+// 22023 or P0002). Anything else gets the general message.
+function bookingError(error, fallback) {
+  console.error(error);
+
+  const isReadable = ["22023", "P0002", "42501"].includes(error.code);
+
+  return new Error(isReadable ? error.message : fallback);
+}
 
 // One page of bookings, filtered and sorted
 export async function getBookings({ filter, sortBy, page }) {
   let query = supabase.from("bookings").select(
-    "id, created_at, startDate, endDate, numNights, numGuests, status, totalPrice, cabins(name), guests(fullName, email)",
+    "id, reference, created_at, startDate, endDate, numNights, numGuests, status, source, totalPrice, cabins(name), guests(fullName, email)",
     // count tells the pagination how many rows exist
     { count: "exact" },
   );
@@ -68,13 +78,13 @@ export async function getBookingsAfterDate(date) {
   return data;
 }
 
-// Stays starting since a date
-export async function getStaysAfterDate(date) {
+// Stays starting since a day ("2026-11-02")
+export async function getStaysAfterDate(day) {
   const { data, error } = await supabase
     .from("bookings")
     .select("*, guests(fullName)")
-    .gte("startDate", date)
-    .lte("startDate", getToday());
+    .gte("startDate", day)
+    .lte("startDate", todayISO());
 
   if (error) {
     console.error(error);
@@ -84,20 +94,16 @@ export async function getStaysAfterDate(date) {
   return data;
 }
 
-// Guests arriving or leaving today
+// Guests arriving or leaving today: reserved and starting today, or checked
+// in and leaving today. Stays are days now, so an exact match is right.
 export async function getStaysTodayActivity() {
-  const { start, end } = getTodayRange();
+  const today = todayISO();
 
   const { data, error } = await supabase
     .from("bookings")
     .select("*, guests(fullName, nationality, countryFlag)")
-    // Arriving today: not checked in yet, starts today.
-    // Leaving today: checked in, ends today.
-    // A range rather than an exact match, so the hour a date was saved
-    // with never hides a stay. Done in SQL, so we never download every
-    // booking ever made.
     .or(
-      `and(status.eq.unconfirmed,startDate.gte.${start},startDate.lte.${end}),and(status.eq.checked-in,endDate.gte.${start},endDate.lte.${end})`,
+      `and(status.eq.reserved,startDate.eq.${today}),and(status.eq.checked_in,endDate.eq.${today})`,
     )
     .order("created_at");
 
@@ -118,27 +124,65 @@ export async function updateBooking(id, obj) {
     .select()
     .single();
 
-  if (error) {
-    console.error(error);
-    throw new Error("Booking could not be updated");
-  }
+  if (error) throw bookingError(error, "Booking could not be updated");
 
   return data;
 }
 
-// Delete one booking
-export async function deleteBooking(id) {
-  const { data, error } = await supabase.from("bookings").delete().eq("id", id);
+// Cancelling keeps the booking, marked cancelled, with when and who
+export async function cancelBooking(id) {
+  const { data, error } = await supabase.rpc("cancel_booking", {
+    p_booking_id: id,
+  });
 
-  if (error) {
-    console.error(error);
-    throw new Error("Booking could not be deleted");
-  }
+  if (error) throw bookingError(error, "Booking could not be cancelled");
 
   return data;
 }
 
-// Every booking that touches a date range, with its cabin and guest.
+// The price and every rule for a stay, before anyone commits to it
+export async function quoteBooking({ cabinId, startDate, endDate, numGuests }) {
+  const { data, error } = await supabase.rpc("quote_booking", {
+    p_cabin_id: cabinId,
+    p_start_date: startDate,
+    p_end_date: endDate,
+    p_num_guests: numGuests,
+  });
+
+  if (error) throw bookingError(error, "This stay could not be priced");
+
+  return data[0];
+}
+
+// A walk-in or phone booking. The same database rules as the guest
+// website: the database works out the price and refuses taken nights.
+export async function createStaffBooking({
+  cabinId,
+  startDate,
+  endDate,
+  numGuests,
+  source,
+  guestFullName,
+  guestEmail,
+  observations,
+}) {
+  const { data, error } = await supabase.rpc("create_staff_booking", {
+    p_cabin_id: cabinId,
+    p_start_date: startDate,
+    p_end_date: endDate,
+    p_num_guests: numGuests,
+    p_source: source,
+    p_guest_full_name: guestFullName,
+    p_guest_email: guestEmail,
+    p_observations: observations,
+  });
+
+  if (error) throw bookingError(error, "Booking could not be created");
+
+  return data;
+}
+
+// Every live booking that touches a range of days, with its cabin and guest.
 // Used by the occupancy calendar. A stay counts if it starts before the range
 // ends and finishes after the range starts.
 export async function getBookingsInRange(from, to) {
@@ -149,7 +193,7 @@ export async function getBookingsInRange(from, to) {
     )
     .lt("startDate", to)
     .gt("endDate", from)
-    .neq("status", "cancelled")
+    .not("status", "in", "(cancelled,no_show)")
     .order("startDate");
 
   if (error) {

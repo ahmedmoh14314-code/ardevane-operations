@@ -1,49 +1,53 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getTodayRange } from "./helpers";
+import { hasArrived, toDay, toISODate, todayISO } from "./helpers";
 
-describe("getTodayRange", () => {
-  afterEach(() => {
-    vi.useRealTimers();
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+describe("toDay", () => {
+  it("reads a database day as that day, at local midnight", () => {
+    const day = toDay("2026-11-02");
+
+    expect(day.getFullYear()).toBe(2026);
+    expect(day.getMonth()).toBe(10);
+    expect(day.getDate()).toBe(2);
+    expect(day.getHours()).toBe(0);
   });
 
-  // 02:30 in the morning, local time: the hour the old exact match failed
-  function at(hour, minute) {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date(2026, 9, 2, hour, minute));
+  it("passes Dates through untouched", () => {
+    const date = new Date(2026, 10, 2, 15, 30);
 
-    return getTodayRange();
+    expect(toDay(date)).toBe(date);
+  });
+});
+
+describe("toISODate", () => {
+  it("writes the local day, not the UTC one", () => {
+    // 01:30 local is still the evening before in UTC west of here
+    expect(toISODate(new Date(2026, 10, 2, 1, 30))).toBe("2026-11-02");
+    expect(toISODate(new Date(2026, 10, 2, 23, 30))).toBe("2026-11-02");
+  });
+});
+
+describe("hasArrived", () => {
+  function on(year, month, day) {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(year, month, day, 9, 0));
   }
 
-  it("covers today from local midnight to local midnight", () => {
-    const { start, end } = at(14, 0);
+  it("is true from the arrival day on", () => {
+    on(2026, 10, 2);
 
-    expect(new Date(start)).toEqual(new Date(2026, 9, 2, 0, 0, 0, 0));
-    expect(new Date(end)).toEqual(new Date(2026, 9, 2, 23, 59, 59, 999));
+    expect(todayISO()).toBe("2026-11-02");
+    expect(hasArrived("2026-11-02")).toBe(true);
+    expect(hasArrived("2026-10-30")).toBe(true);
   });
 
-  it("still means today in the small hours, when UTC is still on yesterday", () => {
-    const { start, end } = at(2, 30);
+  it("is false before it", () => {
+    on(2026, 10, 2);
 
-    expect(new Date(start).getDate()).toBe(2);
-    expect(new Date(end).getDate()).toBe(2);
-  });
-
-  it("includes a stay saved at local midnight and one saved at UTC midnight", () => {
-    const { start, end } = at(9, 0);
-    const inRange = (iso) => iso >= start && iso <= end;
-
-    const localMidnight = new Date(2026, 9, 2).toISOString();
-    const lateEvening = new Date(2026, 9, 2, 22, 0).toISOString();
-
-    expect(inRange(localMidnight)).toBe(true);
-    expect(inRange(lateEvening)).toBe(true);
-  });
-
-  it("leaves out yesterday and tomorrow", () => {
-    const { start, end } = at(9, 0);
-    const inRange = (iso) => iso >= start && iso <= end;
-
-    expect(inRange(new Date(2026, 9, 1, 23, 0).toISOString())).toBe(false);
-    expect(inRange(new Date(2026, 9, 3, 0, 30).toISOString())).toBe(false);
+    expect(hasArrived("2026-11-03")).toBe(false);
+    expect(hasArrived("2026-12-01")).toBe(false);
   });
 });

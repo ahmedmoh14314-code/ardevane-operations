@@ -11,6 +11,7 @@ import ErrorMessage from "../../ui/ErrorMessage";
 import EmptyState from "../../ui/EmptyState";
 import { TableSkeleton } from "../../ui/Skeleton";
 import { below } from "../../styles/breakpoints";
+import { bookingStatus } from "../../utils/constants";
 
 const Board = styled.div`
   border: 1px solid var(--color-grey-200);
@@ -108,12 +109,6 @@ const Stay = styled.button`
   }
 `;
 
-const STATUS_COLOR = {
-  unconfirmed: "blue",
-  "checked-in": "green",
-  "checked-out": "silver",
-};
-
 function CalendarTimeline() {
   const { isLoading, error, cabins, bookings, rangeStart } = useOccupancy();
   const navigate = useNavigate();
@@ -186,7 +181,7 @@ function CalendarTimeline() {
                     $row={row}
                     $from={start + 2}
                     $to={end + 2}
-                    $color={STATUS_COLOR[booking.status] || "silver"}
+                    $color={bookingStatus(booking.status).tag}
                     onClick={() => navigate(`/bookings/${booking.id}`)}
                     title={`${booking.guests?.fullName} · ${booking.numNights} nights · ${booking.status}`}
                   >

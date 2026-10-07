@@ -13,10 +13,17 @@ import { useMoveBack } from "../../hooks/useMoveBack";
 import { useBooking } from "../bookings/useBooking";
 import { useEffect, useState } from "react";
 import Checkbox from "../../ui/Checkbox";
-import { formatCurrency } from "../../utils/helpers";
+import { formatCurrency, hasArrived, toDay } from "../../utils/helpers";
 import { breakfastPrice } from "../../utils/pricing";
 import { useCheckin } from "./useCheckin";
 import { useSettings } from "../settings/useSettings";
+import { format } from "date-fns";
+import { bookingStatus } from "../../utils/constants";
+
+const Notice = styled.p`
+  font-size: 1.5rem;
+  color: var(--color-grey-600);
+`;
 
 const Box = styled.div`
   background-color: var(--color-grey-0);
@@ -40,6 +47,9 @@ function CheckinBooking() {
 
   const {
     id: bookingId,
+    reference,
+    status,
+    startDate,
     guests,
     totalPrice,
     numGuests,
@@ -77,13 +87,28 @@ function CheckinBooking() {
       </Breadcrumb>
 
       <Row type="horizontal">
-        <Heading as="h1">Check in booking #{bookingId}</Heading>
+        <Heading as="h1">Check in {reference}</Heading>
         <ButtonText onClick={moveBack}>&larr; Back</ButtonText>
       </Row>
 
       <BookingDataBox booking={booking} />
 
-      {!hasBreakfast && (
+      {/* The database refuses these too; this just says why up front */}
+      {status !== "reserved" && (
+        <Notice>
+          This booking is {bookingStatus(status).label.toLowerCase()}, so it
+          can't be checked in.
+        </Notice>
+      )}
+
+      {status === "reserved" && !hasArrived(startDate) && (
+        <Notice>
+          This stay starts on {format(toDay(startDate), "EEEE, MMM d")}. Check
+          in opens on the arrival day.
+        </Notice>
+      )}
+
+      {status === "reserved" && hasArrived(startDate) && !hasBreakfast && (
         <Box>
           <Checkbox
             checked={addBreakfast}
@@ -98,28 +123,35 @@ function CheckinBooking() {
         </Box>
       )}
 
-      <Box>
-        <Checkbox
-          checked={confirmPaid}
-          onChange={() => setConfirmPaid((confirm) => !confirm)}
-          disabled={confirmPaid || isCheckingIn}
-          id="confirm"
-        >
-          I confirm that {guests.fullName} has paid the total amount of{" "}
-          {!addBreakfast
-            ? formatCurrency(totalPrice)
-            : `${formatCurrency(
-                totalPrice + optionalBreakfastPrice,
-              )} (${formatCurrency(totalPrice)} + ${formatCurrency(
-                optionalBreakfastPrice,
-              )})`}
-        </Checkbox>
-      </Box>
+      {status === "reserved" && hasArrived(startDate) && (
+        <Box>
+          <Checkbox
+            checked={confirmPaid}
+            onChange={() => setConfirmPaid((confirm) => !confirm)}
+            disabled={confirmPaid || isCheckingIn}
+            id="confirm"
+          >
+            I confirm that {guests.fullName} has paid the total amount of{" "}
+            {!addBreakfast
+              ? formatCurrency(totalPrice)
+              : `${formatCurrency(
+                  totalPrice + optionalBreakfastPrice,
+                )} (${formatCurrency(totalPrice)} + ${formatCurrency(
+                  optionalBreakfastPrice,
+                )})`}
+          </Checkbox>
+        </Box>
+      )}
 
       <ButtonGroup>
-        <Button onClick={handleCheckin} disabled={!confirmPaid || isCheckingIn}>
-          Check in booking #{bookingId}
-        </Button>
+        {status === "reserved" && hasArrived(startDate) && (
+          <Button
+            onClick={handleCheckin}
+            disabled={!confirmPaid || isCheckingIn}
+          >
+            Check in {reference}
+          </Button>
+        )}
         <Button variation="secondary" onClick={moveBack}>
           Back
         </Button>

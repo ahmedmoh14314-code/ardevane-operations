@@ -7,7 +7,7 @@ const past = {
   endDate: "2020-01-06",
   numNights: 5,
   totalPrice: 500,
-  status: "checked-out",
+  status: "checked_out",
 };
 const future = {
   id: 2,
@@ -15,7 +15,7 @@ const future = {
   endDate: "2090-01-04",
   numNights: 3,
   totalPrice: 300,
-  status: "unconfirmed",
+  status: "reserved",
 };
 const cancelled = {
   id: 3,
@@ -61,7 +61,7 @@ describe("withStats", () => {
       endDate: tomorrow,
       numNights: 2,
       totalPrice: 200,
-      status: "checked-in",
+      status: "checked_in",
     };
     const { stats } = withStats({ id: 9, bookings: [ongoing] });
 

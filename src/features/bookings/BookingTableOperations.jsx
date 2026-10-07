@@ -3,6 +3,8 @@ import SortBy from "../../ui/SortBy";
 import Filter from "../../ui/Filter";
 import TableOperations from "../../ui/TableOperations";
 import { useBookingCounts } from "./useBookingCounts";
+import AddBooking from "./AddBooking";
+import { BOOKING_STATUSES } from "../../utils/constants";
 
 function BookingTableOperations() {
   const { counts } = useBookingCounts();
@@ -13,7 +15,7 @@ function BookingTableOperations() {
   return (
     <TableOperations>
       <Search
-        placeholder="Search guest, email, cabin or #id..."
+        placeholder="Search guest, email, cabin or ARD-…"
         label="Search bookings"
       />
 
@@ -21,21 +23,11 @@ function BookingTableOperations() {
         filterField="status"
         options={[
           { value: "all", label: "All", count: countOf("all") },
-          {
-            value: "checked-out",
-            label: "Checked out",
-            count: countOf("checked-out"),
-          },
-          {
-            value: "checked-in",
-            label: "Checked in",
-            count: countOf("checked-in"),
-          },
-          {
-            value: "unconfirmed",
-            label: "Unconfirmed",
-            count: countOf("unconfirmed"),
-          },
+          ...Object.entries(BOOKING_STATUSES).map(([value, { label }]) => ({
+            value,
+            label,
+            count: countOf(value),
+          })),
         ]}
       />
 
@@ -47,6 +39,8 @@ function BookingTableOperations() {
           { value: "totalPrice-asc", label: "Sort by amount (low first)" },
         ]}
       />
+
+      <AddBooking />
     </TableOperations>
   );
 }

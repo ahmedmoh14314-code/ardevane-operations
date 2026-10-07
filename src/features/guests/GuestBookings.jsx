@@ -3,19 +3,13 @@ import { format } from "date-fns";
 import { HiOutlineCalendarDays } from "react-icons/hi2";
 
 import Table from "../../ui/Table";
-import Tag from "../../ui/Tag";
+import BookingStatusTag from "../bookings/BookingStatusTag";
 import Button from "../../ui/Button";
 import EmptyState from "../../ui/EmptyState";
-import { formatCurrency } from "../../utils/helpers";
-
-const STATUS_COLOR = {
-  unconfirmed: "blue",
-  "checked-in": "green",
-  "checked-out": "silver",
-};
+import { formatCurrency, toDay } from "../../utils/helpers";
 
 function formatDay(date) {
-  return format(new Date(date), "MMM dd yyyy");
+  return format(toDay(date), "MMM dd yyyy");
 }
 
 function GuestBookings({ bookings }) {
@@ -52,9 +46,7 @@ function GuestBookings({ bookings }) {
               {formatDay(booking.endDate)}
             </span>
 
-            <Tag type={STATUS_COLOR[booking.status] || "silver"}>
-              {booking.status.replace("-", " ")}
-            </Tag>
+            <BookingStatusTag status={booking.status} />
 
             <span>{booking.numNights}</span>
 

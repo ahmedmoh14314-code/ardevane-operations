@@ -1,4 +1,5 @@
 import { addDays, differenceInCalendarDays, startOfDay } from "date-fns";
+import { toDay } from "./helpers";
 
 // Every day between two dates, as an array of Date objects
 export function eachDay(from, days) {
@@ -11,13 +12,16 @@ export function eachDay(from, days) {
 // Can be negative or past the end when a stay started before, or ends after,
 // the window on screen.
 export function dayOffset(date, rangeStart) {
-  return differenceInCalendarDays(startOfDay(date), startOfDay(rangeStart));
+  return differenceInCalendarDays(
+    startOfDay(toDay(date)),
+    startOfDay(rangeStart),
+  );
 }
 
 // Does a stay show up at all in the days we are looking at?
 export function overlapsRange(booking, rangeStart, rangeEnd) {
-  const start = new Date(booking.startDate);
-  const end = new Date(booking.endDate);
+  const start = toDay(booking.startDate);
+  const end = toDay(booking.endDate);
 
   return start < rangeEnd && end > rangeStart;
 }

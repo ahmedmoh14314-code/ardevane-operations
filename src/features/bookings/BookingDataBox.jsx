@@ -10,7 +10,11 @@ import {
 import DataItem from "../../ui/DataItem";
 import { Flag } from "../../ui/Flag";
 
-import { formatDistanceFromNow, formatCurrency } from "../../utils/helpers";
+import {
+  formatCurrency,
+  formatDistanceFromNow,
+  toDay,
+} from "../../utils/helpers";
 
 const StyledBookingDataBox = styled.section`
   background-color: var(--color-grey-0);
@@ -114,6 +118,8 @@ function BookingDataBox({ booking }) {
     hasBreakfast,
     observations,
     isPaid,
+    status,
+    cancelledAt,
     guests: { fullName: guestName, email, country, countryFlag, nationalID },
     cabins: { name: cabinName },
   } = booking;
@@ -129,11 +135,11 @@ function BookingDataBox({ booking }) {
         </div>
 
         <p>
-          {format(new Date(startDate), "EEE, MMM dd yyyy")} (
-          {isToday(new Date(startDate))
+          {format(toDay(startDate), "EEE, MMM dd yyyy")} (
+          {isToday(toDay(startDate))
             ? "Today"
             : formatDistanceFromNow(startDate)}
-          ) &mdash; {format(new Date(endDate), "EEE, MMM dd yyyy")}
+          ) &mdash; {format(toDay(endDate), "EEE, MMM dd yyyy")}
         </p>
       </Header>
 
@@ -172,12 +178,18 @@ function BookingDataBox({ booking }) {
               )} breakfast)`}
           </DataItem>
 
-          <p>{isPaid ? "Paid" : "Will pay at property"}</p>
+          {status !== "cancelled" && status !== "no_show" && (
+            <p>{isPaid ? "Paid" : "Will pay at property"}</p>
+          )}
         </Price>
       </Section>
 
       <Footer>
-        <p>Booked {format(new Date(created_at), "EEE, MMM dd yyyy, p")}</p>
+        <p>
+          Booked {format(new Date(created_at), "EEE, MMM dd yyyy, p")}
+          {cancelledAt &&
+            ` · cancelled ${format(new Date(cancelledAt), "EEE, MMM dd yyyy, p")}`}
+        </p>
       </Footer>
     </StyledBookingDataBox>
   );

@@ -4,6 +4,7 @@ import { addDays, startOfDay } from "date-fns";
 
 import { getBookingsInRange } from "../../services/apiBookings";
 import { getCabins } from "../../services/apiCabins";
+import { toISODate } from "../../utils/helpers";
 
 export const DAYS_VISIBLE = 14;
 
@@ -32,7 +33,7 @@ export function useOccupancy() {
   } = useQuery({
     queryKey: ["occupancy", rangeStart.toISOString()],
     queryFn: () =>
-      getBookingsInRange(rangeStart.toISOString(), rangeEnd.toISOString()),
+      getBookingsInRange(toISODate(rangeStart), toISODate(rangeEnd)),
   });
 
   const isLoading = isLoadingCabins || isLoadingBookings;

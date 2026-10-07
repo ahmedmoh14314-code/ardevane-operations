@@ -10,7 +10,7 @@ export function useMarkPaid() {
     mutationFn: (bookingId) => updateBooking(bookingId, { isPaid: true }),
 
     onSuccess: (data) => {
-      toast.success(`Booking #${data.id} marked as paid`);
+      toast.success(`Booking ${data.reference} marked as paid`);
       queryClient.invalidateQueries({ active: true });
     },
 

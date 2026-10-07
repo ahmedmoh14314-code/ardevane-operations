@@ -9,6 +9,7 @@ import {
 import Heading from "../../ui/Heading";
 import { Flag } from "../../ui/Flag";
 import { below } from "../../styles/breakpoints";
+import { toDay } from "../../utils/helpers";
 
 const Card = styled.section`
   background-color: var(--color-grey-0);
@@ -42,8 +43,8 @@ const Line = styled.div`
 `;
 
 function formatStay(booking) {
-  const from = format(new Date(booking.startDate), "MMM dd yyyy");
-  const to = format(new Date(booking.endDate), "MMM dd yyyy");
+  const from = format(toDay(booking.startDate), "MMM dd yyyy");
+  const to = format(toDay(booking.endDate), "MMM dd yyyy");
 
   return `${from} — ${to}`;
 }

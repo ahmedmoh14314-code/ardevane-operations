@@ -10,51 +10,20 @@
 // .env.test.local. Point it at a development project, never at real guests.
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createClient } from "@supabase/supabase-js";
+import {
+  admin,
+  cleanUp,
+  createPerson,
+  createTracker,
+  farFuture,
+  insertBooking,
+  run,
+  visitor,
+} from "./helpers";
 
-const url = process.env.SUPABASE_URL;
-const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
-const secretKey = process.env.SUPABASE_SECRET_KEY;
-
-const options = { auth: { persistSession: false, autoRefreshToken: false } };
-
-// The secret key skips every policy: it sets the scene and cleans up
-const admin = createClient(url, secretKey, options);
-const visitor = createClient(url, publishableKey, options);
-
-const run = Date.now().toString(36);
-const created = { users: [], guests: [], cabins: [], bookings: [], files: [] };
-
-async function signUpPerson(label, staffRole) {
-  const email = `access-${label}-${run}@example.com`;
-  const password = `${crypto.randomUUID()}A1`;
-
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: { full_name: `Access ${label}` },
-  });
-  if (error) throw error;
-
-  created.users.push(data.user.id);
-
-  if (staffRole) {
-    const { error: staffError } = await admin
-      .from("staff_members")
-      .insert([{ userId: data.user.id, fullName: label, role: staffRole }]);
-    if (staffError) throw staffError;
-  }
-
-  const client = createClient(url, publishableKey, options);
-  const { error: signInError } = await client.auth.signInWithPassword({
-    email,
-    password,
-  });
-  if (signInError) throw signInError;
-
-  return { id: data.user.id, email, password, client };
-}
+const created = createTracker();
+const signUpPerson = (label, staffRole) =>
+  createPerson(created, `access-${label}`, staffRole);
 
 let openCabin;
 let archivedCabin;
@@ -115,41 +84,15 @@ beforeAll(async () => {
   guestAProfile = profile;
   created.guests.push(profile.id);
 
-  const { data: booking, error: bookingError } = await admin
-    .from("bookings")
-    .insert([
-      {
-        cabinId: openCabin.id,
-        guestId: guestAProfile.id,
-        startDate: "2099-03-01T00:00:00",
-        endDate: "2099-03-04T00:00:00",
-        numNights: 3,
-        numGuests: 1,
-        cabinPrice: 300,
-        extrasPrice: 0,
-        totalPrice: 300,
-        status: "unconfirmed",
-        hasBreakfast: false,
-        isPaid: false,
-      },
-    ])
-    .select()
-    .single();
-  if (bookingError) throw bookingError;
-  created.bookings.push(booking.id);
+  await insertBooking(created, {
+    cabinId: openCabin.id,
+    guestId: guestAProfile.id,
+    startDate: farFuture(3, 1),
+    endDate: farFuture(3, 4),
+  });
 });
 
-afterAll(async () => {
-  if (created.files.length)
-    await admin.storage.from("cabin-images").remove(created.files);
-  if (created.bookings.length)
-    await admin.from("bookings").delete().in("id", created.bookings);
-  if (created.guests.length)
-    await admin.from("guests").delete().in("id", created.guests);
-  if (created.cabins.length)
-    await admin.from("cabins").delete().in("id", created.cabins);
-  for (const id of created.users) await admin.auth.admin.deleteUser(id);
-});
+afterAll(() => cleanUp(created));
 
 describe("a visitor who is signed out", () => {
   it("sees open cabins and their photos, never archived ones", async () => {
@@ -246,8 +189,8 @@ describe("a signed-in guest", () => {
       {
         cabinId: openCabin.id,
         guestId: guestAProfile.id,
-        startDate: "2099-05-01T00:00:00",
-        endDate: "2099-05-03T00:00:00",
+        startDate: farFuture(5, 1),
+        endDate: farFuture(5, 4),
         totalPrice: 1,
       },
     ]);

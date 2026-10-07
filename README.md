@@ -4,7 +4,7 @@ The internal dashboard for a mountain cabin resort. Front-desk staff use it to r
 
 ## What it does
 
-- **Bookings** — search by guest, email, cabin or booking number; filter by status with live counts; check guests in and out from the row; mark a booking as paid.
+- **Bookings** — take walk-in and phone bookings with a live price; search by guest, email, cabin or booking reference; filter by status with live counts; check guests in and out from the row; mark as paid, cancel, or record a no-show.
 - **Today** — arrivals and departures for the current day on the dashboard, with sales and stay-length charts for the last 7, 30 or 90 days.
 - **Cabins** — photo cards with the nightly price after discount; a gallery per cabin; archive a cabin instead of deleting it, so its booking history stays.
 - **Guests** — every guest with their stays, nights and total spend.
@@ -21,9 +21,12 @@ React · React Router · TanStack Query · styled-components · Recharts · Supa
 - The booking search runs inside Postgres through a view, so one box can match a guest, an email, a cabin or a booking number, and only one page of results is ever downloaded.
 - Signing in is not enough to open the dashboard. Guests have accounts too (on the guest website), so staff are the accounts listed in `staff_members`, each with a role: admin, front desk, housekeeping or maintenance.
 - Every table is locked with row-level security. Visitors see only open cabins and the house rules, a guest sees only their own profile and bookings, and staff see everything. Uploading photos is staff-only too.
-- "Today" is worked out in the hotel's own time zone, so a stay never disappears from the list in the hours after midnight.
+- Stays are calendar days, and "today" is worked out in the hotel's own time zone, so a stay never shifts by a day or disappears from the list in the hours after midnight.
+- Bookings are made only through database functions, shared by this dashboard (walk-in and phone bookings) and the guest website, so there is one set of rules: an open cabin, the house rules for stay length and guests, free nights, and a price the database works out itself.
+- A no-overlap constraint makes it impossible for two stays to share a night in a cabin, even when two people confirm at the same moment.
+- A booking moves through reserved → checked in → checked out, or ends as cancelled or a no-show; the database refuses any other step. Cancelling keeps the booking on record, and every booking has a short reference like ARD-7K3Q9P.
 - Each page is loaded only when it is opened.
-- Pricing, date and guest-stat logic is covered by unit tests, and the access rules by tests that sign in as a visitor, two guests, a front desk employee and an admin.
+- Pricing, date and guest-stat logic is covered by unit tests. The access and booking rules are covered by database tests that sign in as a visitor, guests, a front desk employee and an admin, including two guests booking the same nights at the same moment.
 
 ## The backend
 

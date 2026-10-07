@@ -7,23 +7,32 @@ import {
   HiEye,
   HiOutlineCalendarDays,
   HiOutlineChatBubbleLeftEllipsis,
-  HiTrash,
+  HiOutlineUserMinus,
+  HiXCircle,
 } from "react-icons/hi2";
 import { useNavigate } from "react-router-dom";
 
-import Tag from "../../ui/Tag";
 import Table from "../../ui/Table";
 import Modal from "../../ui/Modal";
 import Menus from "../../ui/Menus";
-import ConfirmDelete from "../../ui/ConfirmDelete";
+import ConfirmAction from "../../ui/ConfirmAction";
 import InitialsAvatar from "../../ui/InitialsAvatar";
 import Button from "../../ui/Button";
 
-import { formatCurrency, formatDistanceFromNow } from "../../utils/helpers";
+import {
+  formatCurrency,
+  formatDistanceFromNow,
+  hasArrived,
+  toDay,
+  todayISO,
+} from "../../utils/helpers";
+import { BOOKING_SOURCES } from "../../utils/constants";
 import { useCheckout } from "../check-in-out/useCheckout";
 import { useCabins } from "../cabins/useCabins";
-import { useDeleteBooking } from "./useDeleteBooking";
+import { useCancelBooking } from "./useCancelBooking";
+import { useNoShow } from "./useNoShow";
 import { useMarkPaid } from "./useMarkPaid";
+import BookingStatusTag from "./BookingStatusTag";
 
 // A picture and two lines of text side by side: cabin, guest
 const Pair = styled.div`
@@ -105,15 +114,9 @@ const Note = styled.span`
   }
 `;
 
-const STATUS_TAG = {
-  unconfirmed: "yellow",
-  "checked-in": "green",
-  "checked-out": "silver",
-};
-
 // When the stay starts, in words: Today, In 3 days, 2 days ago
 function whenLabel(startDate) {
-  if (isToday(new Date(startDate))) return "Starts today";
+  if (isToday(toDay(startDate))) return "Starts today";
 
   return formatDistanceFromNow(startDate);
 }
@@ -121,6 +124,8 @@ function whenLabel(startDate) {
 function BookingRow({
   booking: {
     id: bookingId,
+    reference,
+    source,
     startDate,
     endDate,
     numNights,
@@ -135,12 +140,19 @@ function BookingRow({
 }) {
   const navigate = useNavigate();
   const { checkout, isCheckingOut } = useCheckout();
-  const { deleteBooking, isDeleting } = useDeleteBooking();
+  const { cancelBooking, isCancelling } = useCancelBooking();
+  const { markNoShow, isMarkingNoShow } = useNoShow();
   const { markPaid, isMarkingPaid } = useMarkPaid();
 
   // The cabin list is already in the cache, so its photo costs no request
   const { cabins } = useCabins();
   const cabinImage = cabins?.find((cabin) => cabin.id === cabinId)?.image;
+
+  // Check in from the arrival day; a no-show only once that day has passed
+  const isReserved = status === "reserved";
+  const canCheckIn = isReserved && hasArrived(startDate);
+  const canMarkNoShow = isReserved && startDate < todayISO();
+  const isClosed = status === "cancelled" || status === "no_show";
 
   return (
     <Table.Row>
@@ -149,7 +161,9 @@ function BookingRow({
         <Lines>
           <CabinNumber>Cabin {cabinName}</CabinNumber>
           <span>
-            {numGuests} {numGuests === 1 ? "guest" : "guests"}
+            {reference} &middot; {numGuests}{" "}
+            {numGuests === 1 ? "guest" : "guests"}
+            {source !== "website" && ` · ${BOOKING_SOURCES[source]}`}
           </span>
         </Lines>
       </Pair>
@@ -173,8 +187,8 @@ function BookingRow({
         <HiOutlineCalendarDays />
         <Lines>
           <strong>
-            {format(new Date(startDate), "MMM d")} &ndash;{" "}
-            {format(new Date(endDate), "MMM d")}
+            {format(toDay(startDate), "MMM d")} &ndash;{" "}
+            {format(toDay(endDate), "MMM d")}
           </strong>
           <span>
             {numNights} {numNights === 1 ? "night" : "nights"} &middot;{" "}
@@ -183,16 +197,18 @@ function BookingRow({
         </Lines>
       </Dates>
 
-      <Tag type={STATUS_TAG[status]}>{status.replace("-", " ")}</Tag>
+      <BookingStatusTag status={status} />
 
       <Amount>
         <strong>{formatCurrency(totalPrice)}</strong>
-        <Paid $paid={isPaid}>{isPaid ? "Paid" : "Payment due"}</Paid>
+        {!isClosed && (
+          <Paid $paid={isPaid}>{isPaid ? "Paid" : "Payment due"}</Paid>
+        )}
       </Amount>
 
       {/* The one thing the desk does next, one click away */}
       <div>
-        {status === "unconfirmed" && (
+        {canCheckIn && (
           <Button
             size="small"
             onClick={() => navigate(`/checkin/${bookingId}`)}
@@ -201,7 +217,7 @@ function BookingRow({
           </Button>
         )}
 
-        {status === "checked-in" && (
+        {status === "checked_in" && (
           <Button
             size="small"
             variation="secondary"
@@ -224,7 +240,7 @@ function BookingRow({
               See details
             </Menus.Button>
 
-            {status === "unconfirmed" && (
+            {canCheckIn && (
               <Menus.Button
                 icon={<HiArrowDownOnSquare />}
                 onClick={() => navigate(`/checkin/${bookingId}`)}
@@ -233,7 +249,7 @@ function BookingRow({
               </Menus.Button>
             )}
 
-            {status === "checked-in" && (
+            {status === "checked_in" && (
               <Menus.Button
                 icon={<HiArrowUpOnSquare />}
                 onClick={() => checkout(bookingId)}
@@ -243,7 +259,7 @@ function BookingRow({
               </Menus.Button>
             )}
 
-            {!isPaid && (
+            {!isPaid && !isClosed && (
               <Menus.Button
                 icon={<HiBanknotes />}
                 onClick={() => markPaid(bookingId)}
@@ -253,17 +269,39 @@ function BookingRow({
               </Menus.Button>
             )}
 
-            <Modal.Open opens="delete">
-              <Menus.Button icon={<HiTrash />}>Delete booking</Menus.Button>
-            </Modal.Open>
+            {canMarkNoShow && (
+              <Modal.Open opens="no-show">
+                <Menus.Button icon={<HiOutlineUserMinus />}>
+                  Mark as no-show
+                </Menus.Button>
+              </Modal.Open>
+            )}
+
+            {isReserved && (
+              <Modal.Open opens="cancel">
+                <Menus.Button icon={<HiXCircle />}>Cancel booking</Menus.Button>
+              </Modal.Open>
+            )}
           </Menus.List>
         </Menus.Menu>
 
-        <Modal.Window name="delete">
-          <ConfirmDelete
-            resourceName="booking"
-            disabled={isDeleting}
-            onConfirm={() => deleteBooking(bookingId)}
+        <Modal.Window name="cancel">
+          <ConfirmAction
+            title={`Cancel ${reference}`}
+            message={`${guestName}'s stay in Cabin ${cabinName} will be cancelled and its nights freed. The booking stays on record.`}
+            confirmLabel="Cancel booking"
+            disabled={isCancelling}
+            onConfirm={() => cancelBooking(bookingId)}
+          />
+        </Modal.Window>
+
+        <Modal.Window name="no-show">
+          <ConfirmAction
+            title={`${guestName} didn't arrive`}
+            message={`${reference} will be marked as a no-show and its remaining nights freed. The booking stays on record.`}
+            confirmLabel="Mark as no-show"
+            disabled={isMarkingNoShow}
+            onConfirm={() => markNoShow(bookingId)}
           />
         </Modal.Window>
       </Modal>

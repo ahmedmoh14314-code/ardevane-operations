@@ -60,7 +60,10 @@ export async function getGuest(id) {
 // Cancelled stays are not counted as revenue.
 export function withStats(guest) {
   const bookings = guest.bookings ?? [];
-  const counted = bookings.filter((b) => b.status !== "cancelled");
+  // A cancelled booking or a no-show was never a stay
+  const counted = bookings.filter(
+    (b) => b.status !== "cancelled" && b.status !== "no_show",
+  );
 
   const now = Date.now();
   const sorted = [...bookings].sort(
