@@ -20,7 +20,7 @@ const Wrapper = styled.form`
 const Field = styled.input`
   width: 100%;
   font-size: 1.4rem;
-  padding: 0.9rem 5.6rem 0.9rem 3.8rem;
+  padding: 0.9rem 6.8rem 0.9rem 3.8rem;
 
   border: 1px solid var(--color-grey-100);
   border-radius: var(--border-radius-md);
@@ -45,6 +45,12 @@ const Icon = styled(HiMagnifyingGlass)`
   pointer-events: none;
 `;
 
+// Macs say ⌘, Windows and everything else say Ctrl
+const IS_MAC = /mac/i.test(
+  navigator.userAgentData?.platform ?? navigator.platform,
+);
+const SHORTCUT = IS_MAC ? "⌘K" : "Ctrl K";
+
 const Shortcut = styled.kbd`
   position: absolute;
   right: 1rem;
@@ -62,8 +68,8 @@ const Shortcut = styled.kbd`
 `;
 
 // Searching here hands the term to the bookings list, which already knows how
-// to search a guest name, an email or a cabin. Cmd+K (Ctrl+K) jumps here from
-// anywhere, the way it does in the design.
+// to search a guest name, an email or a cabin. ⌘K on a Mac, or Ctrl K on
+// Windows, jumps here from anywhere, the way it does in the design.
 function GlobalSearch() {
   const [term, setTerm] = useState("");
   const inputRef = useRef(null);
@@ -71,7 +77,9 @@ function GlobalSearch() {
 
   useEffect(function () {
     function handleKey(e) {
-      if (e.key !== "k" || !(e.metaKey || e.ctrlKey)) return;
+      const isShortcut = IS_MAC ? e.metaKey : e.ctrlKey;
+
+      if (e.key.toLowerCase() !== "k" || !isShortcut) return;
 
       e.preventDefault();
       inputRef.current?.focus();
@@ -105,7 +113,7 @@ function GlobalSearch() {
         onChange={(e) => setTerm(e.target.value)}
       />
 
-      <Shortcut>⌘K</Shortcut>
+      <Shortcut>{SHORTCUT}</Shortcut>
     </Wrapper>
   );
 }
