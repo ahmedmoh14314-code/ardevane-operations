@@ -22,6 +22,7 @@ import { useBooking } from "./useBooking";
 import { useCheckout } from "../check-in-out/useCheckout";
 import { useCancelBooking } from "./useCancelBooking";
 import { useNoShow } from "./useNoShow";
+import { useAnswerBookingRequest } from "./useBookingRequests";
 import { hasArrived, todayISO } from "../../utils/helpers";
 import { BOOKING_SOURCES } from "../../utils/constants";
 
@@ -42,6 +43,7 @@ function BookingDetail() {
   const { checkout, isCheckingOut } = useCheckout();
   const { cancelBooking, isCancelling } = useCancelBooking();
   const { markNoShow, isMarkingNoShow } = useNoShow();
+  const { approve, decline, isAnswering } = useAnswerBookingRequest();
 
   const moveBack = useMoveBack();
   const navigate = useNavigate();
@@ -74,13 +76,29 @@ function BookingDetail() {
 
       <BookingDataBox booking={booking} />
 
-      {(isReserved || status === "checked_in") && (
+      {(isReserved || status === "pending" || status === "checked_in") && (
         <CabinReadiness cabin={booking.cabins} status={status} />
       )}
 
       <StayFolio booking={booking} />
 
       <ButtonGroup>
+        {/* A booking request from the website waits for this answer */}
+        {status === "pending" && (
+          <>
+            <Button onClick={() => approve(bookingId)} disabled={isAnswering}>
+              Approve request
+            </Button>
+            <Button
+              variation="danger"
+              onClick={() => decline(bookingId)}
+              disabled={isAnswering}
+            >
+              Decline
+            </Button>
+          </>
+        )}
+
         {canCheckIn && (
           <Button onClick={() => navigate(`/checkin/${bookingId}`)}>
             Check in

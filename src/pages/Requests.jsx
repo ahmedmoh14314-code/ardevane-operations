@@ -10,7 +10,7 @@ function Requests() {
       <PageHeader
         eyebrow="Operations"
         title="Guest requests"
-        description="Breakfast, housekeeping, help and repairs asked for from My Stay."
+        description="Food, housekeeping, help and repairs asked for from My Stay."
       >
         <TableOperations>
           <Filter
@@ -25,7 +25,7 @@ function Requests() {
             filterField="type"
             options={[
               { value: "all", label: "Every kind" },
-              { value: "breakfast", label: "Breakfast" },
+              { value: "dining", label: "Dining" },
               { value: "housekeeping", label: "Housekeeping" },
               { value: "support", label: "Help" },
               { value: "maintenance", label: "Repair" },

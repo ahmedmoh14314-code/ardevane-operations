@@ -13,9 +13,9 @@ const StyledActiveRequests = styled(DashboardBox)`
 `;
 
 const List = styled.ul`
-  & > li:first-child {
-    border-top: none;
-  }
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(32rem, 1fr));
+  gap: 1.6rem;
 `;
 
 const Empty = styled.p`

@@ -13,6 +13,8 @@ export const STAFF_ROLES = [
 // Every booking status, with the words and the colour used everywhere in
 // the dashboard. Kept in step with the status check on the bookings table.
 export const BOOKING_STATUSES = {
+  // Booked on the website, waiting for the hotel to approve or decline it
+  pending: { label: "Pending", tag: "yellow" },
   reserved: { label: "Reserved", tag: "blue" },
   checked_in: { label: "Checked in", tag: "green" },
   checked_out: { label: "Checked out", tag: "silver" },

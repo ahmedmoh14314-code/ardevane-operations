@@ -5,22 +5,16 @@ import RequestRow from "./RequestRow";
 import { useRequests } from "./useRequests";
 import Spinner from "../../ui/Spinner";
 
-const Box = styled.section`
-  padding: 0.8rem 2.4rem 1.2rem;
-  background-color: var(--color-grey-0);
-  border: 1px solid var(--color-grey-100);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-`;
-
 const List = styled.ul`
-  & > li:first-child {
-    border-top: none;
-  }
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(34rem, 1fr));
+  gap: 1.6rem;
 `;
 
 const Empty = styled.p`
   padding: 4rem 0;
+  border-radius: var(--border-radius-lg);
+  background-color: var(--color-grey-0);
   text-align: center;
   color: var(--color-grey-500);
 `;
@@ -39,7 +33,7 @@ function RequestQueue() {
   if (isLoading) return <Spinner />;
 
   return (
-    <Box>
+    <>
       {requests.length ? (
         <List>
           {requests.map((request) => (
@@ -53,7 +47,7 @@ function RequestQueue() {
             : "No requests here yet."}
         </Empty>
       )}
-    </Box>
+    </>
   );
 }
 

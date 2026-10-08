@@ -84,31 +84,29 @@ function App() {
           </Suspense>
         </BrowserRouter>
 
+        {/* A small dark pill that rises from the bottom, then goes */}
         <Toaster
-          position="top-center"
-          gutter={12}
-          containerStyle={{ margin: "8px" }}
+          position="bottom-center"
+          gutter={10}
+          containerStyle={{ bottom: 28 }}
           toastOptions={{
             success: {
               duration: 3000,
-              iconTheme: { primary: "#1e6b4f", secondary: "#fff" },
-              style: { borderLeft: "4px solid #1e6b4f" },
+              iconTheme: { primary: "#7fd1a6", secondary: "#1b241f" },
             },
             error: {
               duration: 5000,
-              iconTheme: { primary: "#9b3b23", secondary: "#fff" },
-              style: { borderLeft: "4px solid #9b3b23" },
+              iconTheme: { primary: "#f0a58c", secondary: "#1b241f" },
             },
             style: {
-              fontSize: "15px",
+              fontSize: "14.5px",
               fontWeight: 500,
-              maxWidth: "500px",
-              padding: "14px 20px",
-              borderRadius: "12px",
-              border: "1px solid var(--color-grey-100)",
-              boxShadow: "var(--shadow-md)",
-              backgroundColor: "var(--color-grey-0)",
-              color: "var(--color-grey-800)",
+              maxWidth: "460px",
+              padding: "10px 18px 10px 14px",
+              borderRadius: "999px",
+              backgroundColor: "#1b241f",
+              color: "#f4ede2",
+              boxShadow: "0 12px 32px rgba(0, 0, 0, 0.28)",
             },
           }}
         />

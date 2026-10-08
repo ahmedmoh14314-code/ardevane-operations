@@ -1,6 +1,6 @@
 // Stay requests, checked against a real Supabase project: only a
 // checked-in guest can ask, guests see only their own, staff move requests
-// on, and a delivered breakfast adds exactly one charge to the folio.
+// on, and a delivered food order adds exactly one charge to the folio.
 //
 //   npm run test:db
 
@@ -27,6 +27,7 @@ let arriving;
 let otherGuest;
 let frontDesk;
 let stay;
+let ahead;
 
 const day = (offset) => format(addDays(parseISO(today), offset), "yyyy-MM-dd");
 
@@ -94,11 +95,20 @@ beforeAll(async () => {
     .update({ status: "checked_in" })
     .eq("id", stay.id);
 
-  await insertBooking(created, {
+  ahead = await insertBooking(created, {
     cabinId: otherCabin.id,
     guestId: arriving.guestId,
     startDate: day(10),
     endDate: day(13),
+  });
+
+  // A booking request the hotel hasn't answered yet
+  await insertBooking(created, {
+    cabinId: otherCabin.id,
+    guestId: otherGuest.guestId,
+    startDate: day(20),
+    endDate: day(23),
+    status: "pending",
   });
 });
 
@@ -120,8 +130,26 @@ describe("asking for something", () => {
     });
   });
 
-  it("is refused without a checked-in stay", async () => {
-    const { error } = await ask(arriving, "support", { p_title: "Wi-Fi" });
+  it("works before arrival too, for a confirmed reservation", async () => {
+    const { data, error } = await ask(arriving, "dining", {
+      p_requested_date: day(11),
+      p_requested_for: "08:00",
+      p_items: [{ serviceId: menu[0].id, quantity: 1 }],
+    });
+
+    expect(error).toBe(null);
+    expect(data).toMatchObject({ bookingId: ahead.id, requestedDate: day(11) });
+
+    // Food is for a day of the stay, not any day
+    const outside = await ask(arriving, "dining", {
+      p_requested_date: day(30),
+      p_items: [{ serviceId: menu[0].id, quantity: 1 }],
+    });
+    expect(outside.error?.code).toBe("22023");
+  });
+
+  it("is refused for a request not yet approved, or no booking at all", async () => {
+    const { error } = await ask(otherGuest, "support", { p_title: "Wi-Fi" });
     expect(error?.code).toBe("22023");
 
     const visitorAttempt = await visitor.rpc("create_stay_request", {
@@ -177,13 +205,13 @@ describe("who sees what", () => {
 });
 
 describe("the folio", () => {
-  it("gets one charge for a delivered breakfast, at the menu price", async () => {
+  it("gets one charge for a delivered food order, at the menu price", async () => {
     const [coffee, eggs] = [
       menu.find((item) => item.name === "Coffee"),
-      menu.find((item) => item.name === "Eggs & Toast"),
+      menu.find((item) => item.name === "Avocado Toast"),
     ];
 
-    const { data: order, error } = await ask(staying, "breakfast", {
+    const { data: order, error } = await ask(staying, "dining", {
       p_requested_for: "08:30",
       p_items: [
         { serviceId: eggs.id, quantity: 2 },
@@ -191,7 +219,7 @@ describe("the folio", () => {
       ],
     });
     expect(error).toBe(null);
-    expect(order.title).toBe("Eggs & Toast × 2, Coffee × 1");
+    expect(order.title).toBe("Avocado Toast × 2, Coffee × 1");
 
     const before = await extrasOf(stay.id);
     const move = (status) =>

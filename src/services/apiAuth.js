@@ -62,9 +62,10 @@ export async function login({ email, password }) {
 
   const staff = await getStaffMembership(data.user.id);
 
-  // A guest account, or a member of staff who was removed from the team
+  // A guest account, or a member of staff who was removed from the team.
+  // Only this sign-in is ended: the guest stays signed in on the website.
   if (!staff) {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" });
     throw new Error("This account doesn't have access to Ardevane Operations");
   }
 
@@ -85,8 +86,11 @@ export async function getCurrentUser() {
   return { ...data.user, staff };
 }
 
+// Signs out of Operations only. supabase-js signs out every session of the
+// account by default, which would also sign the same person out of the
+// guest website.
 export async function logout() {
-  const { error } = await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: "local" });
 
   if (error) throw new Error(error.message);
 }

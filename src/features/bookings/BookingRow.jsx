@@ -4,6 +4,7 @@ import {
   HiArrowDownOnSquare,
   HiArrowUpOnSquare,
   HiBanknotes,
+  HiCheckCircle,
   HiEye,
   HiOutlineCalendarDays,
   HiOutlineChatBubbleLeftEllipsis,
@@ -32,6 +33,7 @@ import { useCheckout } from "../check-in-out/useCheckout";
 import { useCabins } from "../cabins/useCabins";
 import { useCancelBooking } from "./useCancelBooking";
 import { useNoShow } from "./useNoShow";
+import { useAnswerBookingRequest } from "./useBookingRequests";
 import BookingStatusTag from "./BookingStatusTag";
 
 // A picture and two lines of text side by side: cabin, guest
@@ -153,6 +155,7 @@ function BookingRow({
   const { checkout, isCheckingOut } = useCheckout();
   const { cancelBooking, isCancelling } = useCancelBooking();
   const { markNoShow, isMarkingNoShow } = useNoShow();
+  const { approve, decline, isAnswering } = useAnswerBookingRequest();
 
   // The cabin list is already in the cache, so its photo costs no request
   const { cabins } = useCabins();
@@ -160,6 +163,7 @@ function BookingRow({
 
   // Check in from the arrival day; a no-show only once that day has passed
   const isReserved = status === "reserved";
+  const isPending = status === "pending";
   const canCheckIn = isReserved && hasArrived(startDate);
   const canMarkNoShow = isReserved && startDate < todayISO();
   const isClosed = status === "cancelled" || status === "no_show";
@@ -224,6 +228,16 @@ function BookingRow({
 
       {/* The one thing the desk does next, one click away */}
       <div>
+        {isPending && (
+          <Button
+            size="small"
+            onClick={() => approve(bookingId)}
+            disabled={isAnswering}
+          >
+            Approve
+          </Button>
+        )}
+
         {canCheckIn && (
           <Button
             size="small"
@@ -272,6 +286,26 @@ function BookingRow({
                 disabled={isCheckingOut}
               >
                 Check out
+              </Menus.Button>
+            )}
+
+            {isPending && (
+              <Menus.Button
+                icon={<HiCheckCircle />}
+                onClick={() => approve(bookingId)}
+                disabled={isAnswering}
+              >
+                Approve request
+              </Menus.Button>
+            )}
+
+            {isPending && (
+              <Menus.Button
+                icon={<HiXCircle />}
+                onClick={() => decline(bookingId)}
+                disabled={isAnswering}
+              >
+                Decline request
               </Menus.Button>
             )}
 

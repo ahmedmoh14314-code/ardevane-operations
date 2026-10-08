@@ -26,7 +26,7 @@ export function useMoveRequest() {
         `${request.title}: ${requestStatusLabel(request.type, request.status).toLowerCase()}`,
       );
       queryClient.invalidateQueries({ queryKey: ["requests"] });
-      // A delivered breakfast is now on the stay's folio
+      // A delivered food order is now on the stay's folio
       queryClient.invalidateQueries({ queryKey: ["folio", request.bookingId] });
       queryClient.invalidateQueries({ queryKey: ["today-activity"] });
       queryClient.invalidateQueries({ queryKey: ["bookings"] });

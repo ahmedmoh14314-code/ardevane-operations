@@ -243,3 +243,27 @@ export async function getBookingCounts() {
     { all: 0 },
   );
 }
+
+// Bookings made on the website that wait for the hotel's answer, oldest
+// first
+export async function getBookingRequests() {
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(
+      "id, reference, created_at, startDate, endDate, numNights, numGuests, totalPrice, observations, cabins(name, image), guests(fullName, email)",
+    )
+    .eq("status", "pending")
+    .order("created_at");
+
+  if (error) {
+    console.error(error);
+    throw new Error("Booking requests could not be loaded");
+  }
+
+  return data;
+}
+
+// Accept a booking request: it becomes a normal reservation
+export async function approveBooking(id) {
+  return updateBooking(id, { status: "reserved" });
+}

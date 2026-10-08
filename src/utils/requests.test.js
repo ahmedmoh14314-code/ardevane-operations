@@ -3,8 +3,8 @@ import { nextRequestStep, requestStatusLabel, requestTotal } from "./requests";
 
 describe("requestStatusLabel", () => {
   it("words one lifecycle to fit each kind of request", () => {
-    expect(requestStatusLabel("breakfast", "in_progress")).toBe("Preparing");
-    expect(requestStatusLabel("breakfast", "completed")).toBe("Delivered");
+    expect(requestStatusLabel("dining", "in_progress")).toBe("Preparing");
+    expect(requestStatusLabel("dining", "completed")).toBe("Delivered");
     expect(requestStatusLabel("support", "completed")).toBe("Resolved");
     expect(requestStatusLabel("maintenance", "completed")).toBe("Fixed");
     expect(requestStatusLabel("housekeeping", "new")).toBe("New");
@@ -13,7 +13,7 @@ describe("requestStatusLabel", () => {
 
 describe("nextRequestStep", () => {
   it("moves new → in progress → completed, then stops", () => {
-    expect(nextRequestStep("breakfast", "new")).toEqual({
+    expect(nextRequestStep("dining", "new")).toEqual({
       to: "in_progress",
       label: "Start preparing",
     });
@@ -26,7 +26,7 @@ describe("nextRequestStep", () => {
 });
 
 describe("requestTotal", () => {
-  it("adds up a breakfast order", () => {
+  it("adds up a food order", () => {
     expect(
       requestTotal([
         { unitPrice: 8, quantity: 2 },

@@ -11,6 +11,7 @@ import DurationChart from "./DurationChart";
 import TodayActivity from "../check-in-out/TodayActivity";
 import InHouse from "../check-in-out/InHouse";
 import ActiveRequests from "../requests/ActiveRequests";
+import BookingRequests from "../bookings/BookingRequests";
 import TodaySummary from "./TodaySummary";
 import { useTodayActivity } from "../check-in-out/useTodayActivity";
 import { countConditions } from "../../utils/operations";
@@ -22,7 +23,7 @@ const StyledDashboardLayout = styled.div`
 
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-  grid-template-rows: auto auto 34rem auto auto auto;
+  grid-template-rows: auto auto auto 34rem auto auto auto;
   gap: 2.4rem;
 
   ${below.laptop} {
@@ -55,6 +56,7 @@ function DashboardLayout() {
         inHouse={today.inHouse.length}
         conditions={countConditions(openCabins)}
       />
+      <BookingRequests />
       <Stats
         bookings={bookings}
         confirmedStays={confirmedStays}

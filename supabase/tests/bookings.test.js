@@ -102,10 +102,18 @@ describe("a quote, signed out", () => {
         p_num_guests: guests,
       });
 
-    const tooShort = await quote(day(10), day(10 + settings.minBookingLength - 1), 2);
+    const tooShort = await quote(
+      day(10),
+      day(10 + settings.minBookingLength - 1),
+      2,
+    );
     expect(tooShort.error.message).toMatch(/at least/);
 
-    const tooLong = await quote(day(10), day(10 + settings.maxBookingLength + 1), 2);
+    const tooLong = await quote(
+      day(10),
+      day(10 + settings.maxBookingLength + 1),
+      2,
+    );
     expect(tooLong.error.message).toMatch(/at most/);
 
     const tooMany = await quote(day(10), day(14), 5);
@@ -143,20 +151,20 @@ describe("a quote, signed out", () => {
 });
 
 describe("a guest booking for themselves", () => {
-  it("gets a reservation with a reference and the server's price", async () => {
+  it("gets a request with a reference and the server's price", async () => {
     const { data, error } = await book(
       guestA,
       farFuture(2, 1),
       farFuture(2, 5),
       2,
-      "Arriving late"
+      "Arriving late",
     );
     track(data);
 
     expect(error).toBeNull();
     expect(data.reference).toMatch(/^ARD-[A-HJKMNP-Z2-9]{6}$/);
     expect(data).toMatchObject({
-      status: "reserved",
+      status: "pending",
       numNights: 4,
       totalPrice: 400,
       guestId: guestA.guestId,
@@ -187,7 +195,11 @@ describe("a guest booking for themselves", () => {
   });
 
   it("can arrive on the day the last guest leaves", async () => {
-    const { data, error } = await book(guestB, farFuture(2, 5), farFuture(2, 9));
+    const { data, error } = await book(
+      guestB,
+      farFuture(2, 5),
+      farFuture(2, 9),
+    );
     track(data);
 
     expect(error).toBeNull();
@@ -201,6 +213,71 @@ describe("a guest booking for themselves", () => {
     results.forEach(({ data }) => track(data));
 
     expect(results.filter(({ error }) => !error)).toHaveLength(1);
+  });
+});
+
+describe("a booking request", () => {
+  let request;
+
+  beforeAll(async () => {
+    const { data, error } = await book(
+      guestA,
+      farFuture(12, 1),
+      farFuture(12, 4),
+    );
+    if (error) throw error;
+    request = track(data);
+  });
+
+  it("holds its nights while the hotel decides", async () => {
+    const { error } = await book(guestB, farFuture(12, 2), farFuture(12, 6));
+    expect(error.message).toMatch(/already booked/);
+  });
+
+  it("can't be approved by the guest", async () => {
+    await guestA.client
+      .from("bookings")
+      .update({ status: "reserved" })
+      .eq("id", request.id);
+
+    const { data } = await admin
+      .from("bookings")
+      .select("status")
+      .eq("id", request.id)
+      .single();
+    expect(data.status).toBe("pending");
+  });
+
+  it("is approved by staff, and can't be checked in before that", async () => {
+    const { data, error } = await frontDesk.client
+      .from("bookings")
+      .update({ status: "reserved" })
+      .eq("id", request.id)
+      .select("status")
+      .single();
+
+    expect(error).toBeNull();
+    expect(data.status).toBe("reserved");
+  });
+
+  it("is declined by staff, which frees its nights", async () => {
+    const { data: other } = await book(
+      guestB,
+      farFuture(12, 10),
+      farFuture(12, 13),
+    );
+    track(other);
+    expect(other.status).toBe("pending");
+
+    const { data, error } = await frontDesk.client.rpc("cancel_booking", {
+      p_booking_id: other.id,
+    });
+    expect(error).toBeNull();
+    expect(data.status).toBe("cancelled");
+
+    const again = await book(guestA, farFuture(12, 10), farFuture(12, 13));
+    track(again.data);
+    expect(again.error).toBeNull();
   });
 });
 

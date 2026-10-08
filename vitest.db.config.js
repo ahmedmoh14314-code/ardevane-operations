@@ -8,5 +8,8 @@ export default defineConfig(({ mode }) => ({
     env: loadEnv(mode, process.cwd(), ""),
     testTimeout: 30000,
     hookTimeout: 120000,
+    // One file at a time: they share one database, and some tests count
+    // every row, which another file adding test guests would throw off
+    threads: false,
   },
 }));

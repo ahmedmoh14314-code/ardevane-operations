@@ -1,7 +1,7 @@
 import supabase from "./supabase";
 
 const COLUMNS =
-  "id, created_at, type, status, title, note, priority, requestedFor, completedAt, bookingId, request_items(id, name, quantity, unitPrice), bookings(reference, cabins(name), guests(fullName))";
+  "id, created_at, type, status, title, note, priority, requestedFor, requestedDate, completedAt, bookingId, request_items(id, name, quantity, unitPrice, services(image)), bookings(reference, cabins(name), guests(fullName))";
 
 // Requests guests made during their stays. "active" is everything still to
 // do, oldest first, urgent ones on top; "completed" is the newest done first.
@@ -33,7 +33,7 @@ export async function getRequests({ scope = "active", type } = {}) {
   return data;
 }
 
-// Move a request on. Completing a breakfast order adds it to the folio,
+// Move a request on. Completing a food order adds it to the folio,
 // in the database.
 export async function setRequestStatus({ id, status }) {
   const { data, error } = await supabase
