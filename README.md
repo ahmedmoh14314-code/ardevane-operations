@@ -1,51 +1,108 @@
 # Ardevane Operations
 
-The internal dashboard for a mountain cabin resort. Front-desk staff use it to run the day: who arrives, who leaves, which cabins are free, what each stay still owes.
+The internal, staff-facing application of Ardevane, a cabin hospitality system made of two applications on one Supabase backend. Front-desk staff use it to run the day: approve booking requests, check guests in and out, keep track of which cabins are ready, handle what guests ask for, and record what each stay owes. The guest side is the [Ardevane Guest Website](https://github.com/ahmedmoh14314-code/ardevane-website).
 
-## What it does
+This repository also owns the database: the Supabase migrations, seed and database tests both applications depend on.
 
-- **Bookings** — take walk-in and phone bookings with a live price; search by guest, email, cabin or booking reference; filter by status with live counts; check guests in and out from the row; cancel, or record a no-show; see what each stay still owes.
-- **Stay folio** — every booking has a folio: the nights, extra charges (breakfast, laundry, extra cleaning or anything written in) and the cash taken, with what is still to pay worked out from them. Check-in and checkout never depend on payment.
-- **Today** — the dashboard opens on what needs attention: arrivals, departures, guests in house, and cabins that are dirty, being cleaned or out of service. Arrivals and departures can be checked in or out from the list, each with what is still owed, and an in-house list shows every current stay with its folio. Each of the day's numbers opens the list behind it. Sales and stay-length charts cover the last 7, 30 or 90 days.
-- **Guest requests** — breakfast orders, housekeeping, help and repairs that checked-in guests send from the website, in one queue (and the oldest few on the dashboard, urgent repairs first). One button moves each on: start, then delivered, completed, resolved or fixed. A delivered breakfast is added to the stay's folio.
-- **Cabins** — photo cards with the nightly price after discount and a housekeeping track (dirty → cleaning → ready) that staff tap to move the cabin on, a striped band when it is out of service, and who is staying in it. The booking and check-in pages show the guest's cabin the same way, with a warning if it isn't ready; a gallery per cabin; archive a cabin instead of deleting it, so its booking history stays.
-- **Guests** — every guest with their stays, nights and total spend.
-- **Occupancy calendar** — each cabin on a timeline, so free nights are easy to spot.
-- **Team and settings** — staff accounts, and the rules every booking is priced against.
-- Light and dark themes, and a layout that works from a phone to a wide screen.
+## Overview
 
-## Built with
+A booking enters the system either from the guest website, as a request the hotel approves, or from the front desk as a walk-in or phone booking. From then on staff manage it here: check-in on the arrival day, requests and charges during the stay, cash payments at the desk, checkout at the end. Cabins have a housekeeping condition that checkout changes automatically, and the dashboard opens on what needs attention today.
 
-React · React Router · TanStack Query · styled-components · Recharts · Supabase (Postgres, Auth, Storage) · Vite · Vitest
+## Key Features
 
-## Under the hood
+- **Dashboard**: today's arrivals and departures with check-in and checkout from the list, guests in house, cabins that are dirty, being cleaned or out of service, pending booking requests, the oldest open guest requests, and sales and stay-length charts for the last 7, 30 or 90 days.
+- **Bookings**: a lifecycle of `pending → reserved → checked_in → checked_out`, or `cancelled` / `no_show`. Search by guest, email, cabin or reference; filter by status with counts; paginate.
+- **Booking requests** from the website, approved or declined from the dashboard.
+- **Walk-in and phone bookings** created by staff with a live price quote.
+- **Check-in and checkout**, with a warning when the cabin is not ready or a balance is unpaid. Neither one blocks.
+- **Occupancy calendar**: each cabin on a timeline.
+- **Cabins**: photo cards and galleries, a housekeeping track (dirty → cleaning → ready), out-of-service, who is staying in each one, and archive instead of delete so booking history stays.
+- **Guests**: every guest with their stays, nights and total spend.
+- **Stay folio**: accommodation, extra charges (from a services list or written in), cash payments, and the balance derived from them.
+- **Request queue**: food orders, housekeeping, cabin and maintenance requests and messages from guests, in one list with one next step per request (`new → in_progress → completed`). A delivered food order adds its charge to the folio.
+- **Team**: staff accounts with a role: admin, front desk, housekeeping or maintenance. Only admins add staff.
+- **Settings**: minimum and maximum stay, maximum guests per booking.
+- **Account**: name, avatar and password.
+- Global search (Ctrl K / ⌘ K), light and dark themes, and a layout that works from a phone to a wide screen.
 
-- The booking search runs inside Postgres through a view, so one box can match a guest, an email, a cabin or a booking number, and only one page of results is ever downloaded.
-- Signing in is not enough to open the dashboard. Guests have accounts too (on the guest website), so staff are the accounts listed in `staff_members`, each with a role: admin, front desk, housekeeping or maintenance.
-- Every table is locked with row-level security. Visitors see only open cabins and the house rules, a guest sees only their own profile and bookings, and staff see everything. Uploading photos is staff-only too.
-- Stays are calendar days, and "today" is worked out in the hotel's own time zone, so a stay never shifts by a day or disappears from the list in the hours after midnight.
-- Bookings are made only through database functions, shared by this dashboard (walk-in and phone bookings) and the guest website, so there is one set of rules: an open cabin, the house rules for stay length and guests, free nights, and a price the database works out itself.
-- Nothing about money is stored as a total or a paid flag. A view adds up each folio (accommodation + charges − payments) every time it is read, so the numbers can't drift. Only staff can add a charge or record a payment, amounts must be above zero, and the only payment method is cash.
-- Checking a guest out makes the cabin dirty, in the database itself, so it happens whichever screen it is done from. "Occupied" is not a condition: it comes from the checked-in booking, so a cabin can be ready and occupied at once. Checkout warns about an unpaid balance but never blocks it.
-- Guest requests are one table for all four kinds, with one lifecycle (new → in progress → completed). Guests create them only through a database function that finds their checked-in stay, so nothing can be asked for before arrival or after checkout, and breakfast is priced from the menu in the database. Completing a breakfast order adds one charge to the folio, linked to the request so it can never be charged twice.
-- A no-overlap constraint makes it impossible for two stays to share a night in a cabin, even when two people confirm at the same moment.
-- A booking moves through reserved → checked in → checked out, or ends as cancelled or a no-show; the database refuses any other step. Cancelling keeps the booking on record, and every booking has a short reference like ARD-7K3Q9P.
-- Each page is loaded only when it is opened.
-- Folio, date and guest-stat logic is covered by unit tests. The access, booking, folio, cabin-condition and request rules are covered by database tests that sign in as a visitor, guests, a front desk employee and an admin, including two guests booking the same nights at the same moment.
+## How It Connects to the Guest Website
 
-## The backend
+Both applications use the same database, so there is no API between them:
 
-This repository owns the database for both apps (this dashboard and the [guest website](https://github.com/ahmedmoh14314-code/ardevane-website)). Everything lives in `supabase/`:
+- A reservation request made on the website appears here as `pending`; approving it makes it `reserved` and the guest sees the change.
+- Checking a guest in switches the guest's account on the website to My Stay.
+- A food order or housekeeping request sent from the website lands in the request queue here.
+- Marking a food order delivered posts its charge to the folio, which the guest can read on the website.
+- Archiving a cabin or changing the stay rules in Settings changes what the website offers.
 
-- `migrations/` builds the schema step by step, access rules included. The first file is the starting point; each one after it says what it changes and why.
-- `seed.sql` fills a local database.
-- `tests/` checks the access rules against a real project (`npm run test:db`).
+Guest website: https://github.com/ahmedmoh14314-code/ardevane-website
 
-To set up your own project:
+## Architecture
 
-1. Create a Supabase project and copy `.env.example` to `.env.local` and `.env.test.local` (the file says which value goes where).
-2. Apply the migrations: `npx supabase db push --db-url "$SUPABASE_DB_URL"`.
-3. Create your own account in Supabase (Authentication > Users > Add user). There is no team yet to add you from the dashboard, so make it the first admin in the SQL editor:
-   `insert into staff_members ("userId", role) select id, 'admin' from auth.users where email = 'you@example.com';`
-4. From then on, admins add the rest of the team from the Team page.
-5. Point `src/services/supabase.js` at your project and run `npm install`, then `npm run dev`.
+```
+   React / Vite Operations          Next.js Guest Website
+   (this repository)                (ardevane-website)
+             \                            /
+              \                          /
+                      Supabase
+            Postgres · Auth · Storage
+```
+
+The database is the shared source of truth. This repository holds its migrations, seed data and tests under `supabase/`. The dashboard talks to Supabase directly from the browser with the staff member's session; every table is protected by row-level security, and writes that carry business rules go through database functions.
+
+## Engineering Decisions
+
+- **Booking rules are enforced in the database.** `create_booking` (guests) and `create_staff_booking` (staff) share one quote and one set of checks: an open cabin, the stay-length and guest limits from Settings, free nights, and a price the database computes. An exclusion constraint on the booking date range rejects overlapping stays in the same cabin, even from two simultaneous requests. A trigger refuses any status change outside the lifecycle.
+- **Staff are a table, not "anyone signed in".** Guests and staff share Supabase Auth. Being signed in gives nothing; `staff_members` rows with a role do, and the policies call `is_staff()` and `staff_role()`.
+- **Row-level security everywhere.** Anonymous visitors read open cabins and the stay rules. A guest reads and changes only their own profile, bookings, charges and requests. Staff read everything; only admins manage the team and settings. Storage uploads are staff-only.
+- **Occupancy is derived, condition is stored.** "Occupied" comes from the checked-in booking. `cabins.condition` (`ready`, `dirty`, `cleaning`, `out_of_service`) is a separate thing, so a cabin can be occupied and dirty at the same time. Checkout sets the cabin to dirty from a trigger, whichever screen it is done from.
+- **The folio is a view.** No stored totals or paid flags. `booking_folios` adds accommodation and charges and subtracts payments each time it is read. Only staff can add charges or record payments, amounts must be positive, and cash is the only method.
+- **One request model.** Food orders, housekeeping, cabin, maintenance and support requests are one table with one lifecycle and per-type labels in the UI. Guests create them through a function that finds their current or next confirmed stay. Completing a food order inserts one charge linked to the request, so it cannot be charged twice.
+- **Calendar dates, in the property's time zone.** Stays are stored as dates, and "today" is computed in the hotel's time zone, so nothing shifts by a day around midnight.
+- **Booking search runs in Postgres** through a view, so one box matches guest, email, cabin or reference and only one page of results is downloaded.
+
+## Tech Stack
+
+- React 18 and Vite 4
+- React Router 6
+- TanStack Query 4
+- Supabase (`@supabase/supabase-js`): PostgreSQL, Auth, Storage
+- styled-components
+- Recharts
+- react-hook-form, react-hot-toast, date-fns
+- Vitest: 41 unit tests, plus database tests that run against a real Supabase project
+
+## Backend
+
+Everything the database needs is under `supabase/`:
+
+- `migrations/` builds the schema step by step, including the policies, functions, triggers and views. The first file is the baseline; each file after it says what it changes and why.
+- `seed.sql` gives a fresh database the stay rules it needs to start. Cabins, menu and demo bookings are not seeded yet.
+- `tests/` signs in as a visitor, two guests, a front-desk employee and an admin and checks the access rules, booking rules, folio maths, cabin condition and requests (`npm run test:db`). The booking tests include two guests booking the same nights at the same moment.
+
+## Local Development
+
+```bash
+npm install
+cp .env.example .env.local        # SUPABASE_DB_URL, to apply migrations
+npx supabase db push --db-url "$SUPABASE_DB_URL"
+npm run dev                       # http://localhost:5173
+npm test                          # unit tests
+npm run test:db                   # database tests, needs .env.test.local
+```
+
+Then create your first staff account:
+
+1. In Supabase, **Authentication → Users → Add user**.
+2. In the SQL editor, make that user an admin:
+   ```sql
+   insert into staff_members ("userId", role)
+   select id, 'admin' from auth.users where email = 'you@example.com';
+   ```
+3. From then on, admins add the rest of the team from the Team page.
+
+The Supabase URL and publishable key the app uses are in `src/services/supabase.js`.
+
+## Related Repository
+
+[Ardevane Guest Website](https://github.com/ahmedmoh14314-code/ardevane-website), the Next.js site where guests browse cabins, request reservations and use My Stay.
