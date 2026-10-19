@@ -5,7 +5,7 @@
 --  any policy. What needs locking is writing: anyone with the publishable
 --  key could upload, and in the leftover cabin-image bucket also replace
 --  and delete. From now on only staff can write, and the two leftover
---  buckets from the course project are closed.
+--  buckets are closed.
 -- ===========================================================================
 
 
@@ -33,7 +33,7 @@ $$;
 
 
 -- ---------------------------------------------------------------------------
--- 2. The buckets in use stay public. The course project's leftovers (nothing
+-- 2. The buckets in use stay public. The leftover buckets (nothing
 --    in either app uses them) become private, so with no policy left nobody
 --    can read or write them. Remove them from the dashboard when convenient.
 -- ---------------------------------------------------------------------------

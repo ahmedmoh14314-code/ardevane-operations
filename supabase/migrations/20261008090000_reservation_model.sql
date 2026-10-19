@@ -78,7 +78,7 @@ alter table public.bookings
 
 -- ---------------------------------------------------------------------------
 -- 6. The booking id alone is the key (it used to be id + cabin), and the
---    foreign keys lose the course project's typos
+--    foreign keys lose the earlier typos
 -- ---------------------------------------------------------------------------
 alter table public.bookings drop constraint bookings_pkey;
 alter table public.bookings add constraint bookings_pkey primary key (id);

@@ -3,7 +3,7 @@
 --
 --  The database exactly as it stood before migrations were versioned (read
 --  from the live project on 2026-10-07): the
---  course project's tables, the Ardevane V1 additions (archived cabins,
+--  initial tables, the Ardevane V1 additions (archived cabins,
 --  cabin gallery, bookings search) and the access rules of that time.
 --  Everything after this file changes it on purpose.
 --
@@ -66,7 +66,7 @@ create table public.bookings (
   "guestId"       bigint,
   "numNights"     integer,
   constraint bookings_pkey primary key (id, "cabinId"),
-  -- The names keep the course project's original typos ("cabinID", "gusetID")
+  -- The names keep the earlier typos ("cabinID", "gusetID")
   constraint "bookings_cabinID_fkey" foreign key ("cabinId") references public.cabins (id),
   constraint "bookings_gusetID_fkey" foreign key ("guestId") references public.guests (id)
 );
@@ -135,7 +135,7 @@ create policy "Website can read settings"
 
 -- ---------------------------------------------------------------------------
 -- Storage: the two buckets in use (cabin-images, avatars) plus two leftovers
--- from the course project (cabin-image, avatar). Anyone could upload, and in
+-- (cabin-image, avatar). Anyone could upload, and in
 -- cabin-image also replace and delete.
 -- ---------------------------------------------------------------------------
 insert into storage.buckets (id, name, public)
